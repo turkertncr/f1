@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(xxd \"C:\\\\Users\\\\turker\\\\Desktop\\\\Projects\\\\f1\\\\src\\\\main\\\\resources\\\\static\\\\f1-frontend\\\\src\\\\components\\\\ResultDashboard.tsx\")",
+      "PowerShell(Get-Content *)"
+    ]
+  }
+}
