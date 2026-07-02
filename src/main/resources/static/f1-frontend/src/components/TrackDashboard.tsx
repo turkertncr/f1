@@ -35,7 +35,10 @@ export default function ComparativeTrackMap({ sessionKey, baseDriverNumber, base
   const minY = Math.min(...ys), maxY = Math.max(...ys);
   const pad = 500; // Adding padding for track edges
 
-  const viewBox = `${minX - pad} ${minY - pad} ${maxX - minX + pad * 2} ${maxY - minY + pad * 2}`;
+  // OpenF1 coordinates are Y-up but SVG is Y-down, so flip vertically:
+  // paths are drawn in raw coordinates inside a scale(1,-1) group, which maps
+  // the Y range [minY, maxY] to [-maxY, -minY].
+  const viewBox = `${minX - pad} ${-maxY - pad} ${maxX - minX + pad * 2} ${maxY - minY + pad * 2}`;
 
   // Filter out any drivers that don't have speeds to prevent errors
   const validDrivers = driversData.filter(d => d.speeds.length > 0);
@@ -92,18 +95,20 @@ export default function ComparativeTrackMap({ sessionKey, baseDriverNumber, base
 
   return (
       <svg viewBox={viewBox} className="w-full h-full drop-shadow-2xl">
-          {segments.map((seg, idx) => (
-              <path 
-                  key={idx} 
-                  d={seg.path} 
-                  fill="none" 
-                  stroke={seg.color} 
-                  strokeWidth={250}
-                  strokeLinecap="round" 
-                  strokeLinejoin="round" 
-                  className="transition-all duration-300"
-              />
-          ))}
+          <g transform="scale(1, -1)">
+              {segments.map((seg, idx) => (
+                  <path
+                      key={idx}
+                      d={seg.path}
+                      fill="none"
+                      stroke={seg.color}
+                      strokeWidth={250}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="transition-all duration-300"
+                  />
+              ))}
+          </g>
       </svg>
   );
 }

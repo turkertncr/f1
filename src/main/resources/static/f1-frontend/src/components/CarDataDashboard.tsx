@@ -73,7 +73,7 @@ function LapTimeChart({ series, selectedLaps, onToggleLap, totalSelected }: LapT
     const yMax = hi + range * 0.1;
     const yRange = yMax - yMin;
 
-    const H = 280;
+    const H = 420;
     const padX = 60;
     const padY = 30;
 
@@ -82,8 +82,8 @@ function LapTimeChart({ series, selectedLaps, onToggleLap, totalSelected }: LapT
     const maxLap = Math.max(...allLapNums);
     const xRange = Math.max(maxLap - minLap, 1);
 
-    // Dynamically calculate width to spread points out, ensuring a minimum distance of 28px per lap
-    const W = Math.max(1000, padX * 2 + xRange * 28);
+    // Fixed viewBox width: the SVG scales to the container so all laps fit without scrolling
+    const W = 1400;
 
     const formatTime = (dur: number) => {
         const m = Math.floor(dur / 60);
@@ -114,8 +114,8 @@ function LapTimeChart({ series, selectedLaps, onToggleLap, totalSelected }: LapT
                 </div>
             </div>
 
-            <div className="relative w-full overflow-x-auto overflow-y-hidden bg-neutral-950/80 rounded-2xl border border-neutral-800/60 shadow-inner">
-                <svg viewBox={`0 0 ${W} ${H}`} style={{ minWidth: W }} className="h-full drop-shadow-xl overflow-visible cursor-crosshair">
+            <div className="relative w-full bg-neutral-950/80 rounded-2xl border border-neutral-800/60 shadow-inner">
+                <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-auto drop-shadow-xl overflow-visible cursor-crosshair">
                     {[0, 0.25, 0.5, 0.75, 1].map(pct => {
                         const y = H - padY - pct * (H - padY * 2);
                         const dur = yMin + pct * yRange;
@@ -161,7 +161,7 @@ function LapTimeChart({ series, selectedLaps, onToggleLap, totalSelected }: LapT
                         return (
                             <g key={s.id}>
                                 {paths.map((pts, i) => (
-                                    <polyline key={i} points={pts} fill="none" stroke={s.color} strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" style={{ filter: `drop-shadow(0px 4px 6px ${s.color}60)` }} />
+                                    <polyline key={i} points={pts} fill="none" stroke={s.color} strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round" style={{ filter: `drop-shadow(0px 4px 6px ${s.color}60)` }} />
                                 ))}
                                 {s.laps.map(l => {
                                     if (!l.isValid) return null;
@@ -197,8 +197,6 @@ function LapTimeChart({ series, selectedLaps, onToggleLap, totalSelected }: LapT
                         );
                     })}
                 </svg>
-                <div className="absolute left-2 top-1/2 -translate-y-1/2 -rotate-90 text-[10px] font-black uppercase tracking-widest text-neutral-500 origin-center pointer-events-none">Lap Time</div>
-                <div className="absolute bottom-1 right-2 text-[10px] font-black uppercase tracking-widest text-neutral-500 pointer-events-none">Lap Number</div>
             </div>
         </motion.div>
     );

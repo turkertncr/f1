@@ -99,10 +99,10 @@ export default function SessionSelector({ onSessionSelect }: Props) {
             </span>
           </div>
           <h1 className="text-5xl md:text-6xl font-black tracking-tighter bg-gradient-to-r from-white via-white to-neutral-400 bg-clip-text text-transparent">
-            GRAND PRIX
+            F1 DATA
           </h1>
           <h1 className="text-5xl md:text-6xl font-black tracking-tighter text-red-600 -mt-2">
-            SELECTOR
+            VISUALIZER
           </h1>
           <p className="text-neutral-500 mt-4 text-sm">
             Choose a Grand Prix and session to view detailed results

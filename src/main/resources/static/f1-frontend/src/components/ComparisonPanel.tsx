@@ -42,11 +42,12 @@ interface ChartProps {
     min?: number;
     max?: number;
     boolean?: boolean;
+    height?: number;
     hoveredPct?: number | null;
     onHover?: (pct: number | null) => void;
 }
 
-function TelemetryChart({ series, label, unit = '', min, max, boolean: isBool, hoveredPct, onHover }: ChartProps) {
+function TelemetryChart({ series, label, unit = '', min, max, boolean: isBool, height, hoveredPct, onHover }: ChartProps) {
     if (series.length === 0 || series.every(s => s.data.length === 0)) return null;
 
     let globalMin = min;
@@ -69,7 +70,8 @@ function TelemetryChart({ series, label, unit = '', min, max, boolean: isBool, h
     const range = (hi - lo) || 1;
 
     const W = 800;
-    const H = isBool ? 60 : 180;
+    const renderedH = isBool ? 48 : (height ?? 160);
+    const H = isBool ? 60 : renderedH + 20;
     const pad = 8;
 
     return (
@@ -97,7 +99,7 @@ function TelemetryChart({ series, label, unit = '', min, max, boolean: isBool, h
                     </div>
                 )}
 
-                <svg viewBox={`0 0 ${W} ${H}`} className="w-full drop-shadow-xl overflow-visible" style={{ height: isBool ? 48 : 160 }} preserveAspectRatio="none">
+                <svg viewBox={`0 0 ${W} ${H}`} className="w-full drop-shadow-xl overflow-visible" style={{ height: renderedH }} preserveAspectRatio="none">
                     {series.map(s => {
                         if (s.data.length === 0) return null;
                         const pts = s.data.map((v, i) => {
@@ -111,7 +113,8 @@ function TelemetryChart({ series, label, unit = '', min, max, boolean: isBool, h
                                 points={pts.join(' ')}
                                 fill="none"
                                 stroke={s.color}
-                                strokeWidth={2}
+                                strokeWidth={1.5}
+                                vectorEffect="non-scaling-stroke"
                                 strokeLinejoin="round"
                                 strokeLinecap="round"
                                 className="drop-shadow-md"
@@ -459,9 +462,9 @@ export default function ComparisonPanel({ sessionKey, entries, onRemoveEntry, on
             <SectorTimesTable entries={entries} />
 
             {/* Speed Dominance Map + Telemetry */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                {/* Track Map */}
-                <div className="lg:col-span-5 xl:col-span-4 bg-neutral-900/40 border border-neutral-800 rounded-3xl p-6 relative flex flex-col min-h-[400px]">
+            <div className="flex flex-col gap-6">
+                {/* Track Map — top right, above the charts */}
+                <div className="w-full lg:w-1/2 xl:w-5/12 lg:self-end bg-neutral-900/40 border border-neutral-800 rounded-3xl p-6 relative flex flex-col min-h-[400px]">
                     <div className="flex items-center gap-2 mb-4">
                         <span className="text-xs font-black uppercase tracking-widest text-neutral-400 drop-shadow-sm flex items-center gap-2">
                             Speed Dominance Map
@@ -484,10 +487,10 @@ export default function ComparisonPanel({ sessionKey, entries, onRemoveEntry, on
                     </div>
                 </div>
 
-                {/* Telemetry Charts */}
-                <div className="lg:col-span-7 xl:col-span-8 flex flex-col gap-5">
-                    <TelemetryChart series={speedSeries} label="Speed" unit=" km/h" min={0} max={350} hoveredPct={hoveredPct} onHover={setHoveredPct} />
-                    <TelemetryChart series={throttleSeries} label="Throttle" unit="%" min={0} max={100} hoveredPct={hoveredPct} onHover={setHoveredPct} />
+                {/* Telemetry Charts — full width */}
+                <div className="w-full flex flex-col gap-5">
+                    <TelemetryChart series={speedSeries} label="Speed" min={0} max={380} height={480} hoveredPct={hoveredPct} onHover={setHoveredPct} />
+                    <TelemetryChart series={throttleSeries} label="Throttle" min={0} max={100} hoveredPct={hoveredPct} onHover={setHoveredPct} />
                     <TelemetryChart series={gearSeries} label="Gear" min={0} max={8} hoveredPct={hoveredPct} onHover={setHoveredPct} />
                     <TelemetryChart series={brakeSeries} label="Brake" min={0} max={1} boolean hoveredPct={hoveredPct} onHover={setHoveredPct} />
                 </div>

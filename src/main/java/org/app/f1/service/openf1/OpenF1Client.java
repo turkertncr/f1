@@ -347,7 +347,6 @@ public class OpenF1Client {
                     .uri(uriBuilder -> {
                         uriBuilder.path(path);
                         if (params != null) {
-                            // comparison keys like "date>" get percent-encoded; OpenF1 accepts both forms
                             params.forEach((k, v) -> {
                                 if (v != null) uriBuilder.queryParam(k, v);
                             });
