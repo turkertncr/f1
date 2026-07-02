@@ -2,6 +2,7 @@ package org.app.f1.entities;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.app.f1.exception.ResourceNotFoundException;
 import org.hibernate.annotations.SQLInsert;
 import org.hibernate.jdbc.Expectation;
 
@@ -53,7 +54,10 @@ public class Lap {
     private boolean outlier;
 
     public Instant getLapEnd() {
-        if (duration == null) { throw new RuntimeException("duration is null"); }
+        if (duration == null) {
+            throw new ResourceNotFoundException(
+                    "Lap " + lapNumber + " of driver " + driverNumber + " has no duration");
+        }
         return lapStart.plusMillis((long) (duration * 1000) + 250);
     }
 }

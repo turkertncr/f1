@@ -27,7 +27,7 @@ import java.util.function.Function;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-@SuppressWarnings("unused")
+@SuppressWarnings("all")
 public class OpenF1Client {
 
     private static final String RETRY_NAME = "openF1Retry";
@@ -175,7 +175,7 @@ public class OpenF1Client {
     }
 
     @Retry(name = RETRY_NAME, fallbackMethod = "getLapsFallback")
-    @RateLimiter(name = RATE_LIMITER_NAME)
+    @RateLimiter(name = RATE_LIMITER_NAME, fallbackMethod = "getLapsFallback")
     @CircuitBreaker(name = CIRCUIT_BREAKER_NAME, fallbackMethod = "getLapsFallback")
     public List<LapRequest> getLaps(int sessionKey, int driverNumber) {
         log.debug("Fetching lap requests for session: {}, driver: {}", sessionKey, driverNumber);
@@ -194,7 +194,7 @@ public class OpenF1Client {
     }
 
     @Retry(name = RETRY_NAME, fallbackMethod = "getAllLapsFallback")
-    @RateLimiter(name = RATE_LIMITER_NAME)
+    @RateLimiter(name = RATE_LIMITER_NAME, fallbackMethod = "getAllLapsFallback")
     @CircuitBreaker(name = CIRCUIT_BREAKER_NAME, fallbackMethod = "getAllLapsFallback")
     public List<LapRequest> getAllLaps(int sessionKey) {
         log.debug("Fetching lap requests for session: {}", sessionKey);
@@ -212,7 +212,7 @@ public class OpenF1Client {
     }
 
     @Retry(name = RETRY_NAME, fallbackMethod = "getCarDataFallback")
-    @RateLimiter(name = RATE_LIMITER_NAME)
+    @RateLimiter(name = RATE_LIMITER_NAME, fallbackMethod = "getCarDataFallback")
     @CircuitBreaker(name = CIRCUIT_BREAKER_NAME, fallbackMethod = "getCarDataFallback")
     public List<CarDataRequest> getCarData(int driverNumber, Instant lapStart, Instant lapEnd, int sessionKey) {
         log.debug("Fetching car data for driver: {}, session: {}", driverNumber, sessionKey);
@@ -236,7 +236,7 @@ public class OpenF1Client {
     }
 
     @Retry(name = RETRY_NAME, fallbackMethod = "getAllCarDataFallback")
-    @RateLimiter(name = RATE_LIMITER_NAME)
+    @RateLimiter(name = RATE_LIMITER_NAME, fallbackMethod = "getAllCarDataFallback")
     @CircuitBreaker(name = CIRCUIT_BREAKER_NAME, fallbackMethod = "getAllCarDataFallback")
     public List<CarDataRequest> getAllCarData(int driverNumber, int sessionKey) {
         log.debug("Fetching car data for driver: {}, session: {}", driverNumber, sessionKey);
@@ -254,7 +254,7 @@ public class OpenF1Client {
     }
 
     @Retry(name = RETRY_NAME, fallbackMethod = "getRaceControlEventsFallback")
-    @RateLimiter(name = RATE_LIMITER_NAME)
+    @RateLimiter(name = RATE_LIMITER_NAME, fallbackMethod = "getRaceControlEventsFallback")
     @CircuitBreaker(name = CIRCUIT_BREAKER_NAME, fallbackMethod = "getRaceControlEventsFallback")
     public List<RaceControlEventRequest> getRaceControlEvents(int sessionKey) {
         log.debug("Fetching race control events for session: {}", sessionKey);
@@ -347,12 +347,9 @@ public class OpenF1Client {
                     .uri(uriBuilder -> {
                         uriBuilder.path(path);
                         if (params != null) {
+                            // comparison keys like "date>" get percent-encoded; OpenF1 accepts both forms
                             params.forEach((k, v) -> {
-                                if (k.contains(">=") || k.contains("<=")) {
-                                    uriBuilder.queryParam(k + v);
-                                } else {
-                                    if (v != null) uriBuilder.queryParam(k, v);
-                                }
+                                if (v != null) uriBuilder.queryParam(k, v);
                             });
                         }
                         var uri = uriBuilder.build();
