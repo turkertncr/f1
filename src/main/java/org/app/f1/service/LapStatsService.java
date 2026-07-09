@@ -25,7 +25,7 @@ public class LapStatsService {
 
     public List<LapResponse> getLapResponses(int sessionKey, int driverNumber) {
         var carDataMap = carDataService.getCarDataFromDb(sessionKey, driverNumber);
-        var x = lapService.getLaps(sessionKey, driverNumber).stream()
+        return lapService.getLaps(sessionKey, driverNumber).stream()
                 .map(lap -> {
                     var lapList = carDataMap.getOrDefault(lap.getLapNumber(), List.of());
                     IntSummaryStatistics stats = lapList.stream()
@@ -39,16 +39,6 @@ public class LapStatsService {
                     return LapResponse.fromEntity(lap, avgSpeed, topSpeed);
                 })
                 .toList();
-
-        final Double[] duration = {Double.MAX_VALUE};
-
-        x.forEach(lp -> {
-            if (lp.duration() != null && lp.duration() < duration[0]) {
-                duration[0] = lp.duration();
-            }
-        });
-
-        return x;
     }
 
     private Map<Integer, Double> getPaces(int sessionKey) {
@@ -64,13 +54,16 @@ public class LapStatsService {
         map.forEach((k, v) -> {
             DoubleSummaryStatistics stats = v.stream()
                     .filter(Objects::nonNull)
+                    .filter(lap -> !lap.isOutlier() && !lap.isPitLap())
                     .map(Lap::getDuration)
                     .filter(Objects::nonNull)
                     .mapToDouble(Double::doubleValue)
                     .summaryStatistics();
 
-            double avgPace = stats.getAverage();
-            paces.put(k, avgPace);
+            if (stats.getCount() == 0) {
+                return;
+            }
+            paces.put(k, stats.getAverage());
         });
         return paces;
     }

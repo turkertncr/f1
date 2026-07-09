@@ -49,15 +49,19 @@ public class Driver {
         return (fullName).replace(" ", "_").toLowerCase(Locale.ROOT);
     }
 
+    private String effectiveNormalizedName() {
+        if (normalizedName != null) return normalizedName;
+        return fullName != null ? normalize(fullName) : null;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Driver driver = (Driver) o;
-        if (normalizedName == null) normalizedName = normalize(fullName);
-        return normalizedName.equals(driver.normalizedName);
+        return Objects.equals(effectiveNormalizedName(), driver.effectiveNormalizedName());
     }
 
     @Override
-    public int hashCode() { return Objects.hash(normalizedName); }
+    public int hashCode() { return Objects.hash(effectiveNormalizedName()); }
 }

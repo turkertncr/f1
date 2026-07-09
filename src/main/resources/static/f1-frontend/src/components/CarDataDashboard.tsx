@@ -50,12 +50,10 @@ function LapTimeChart({ series, selectedLaps, onToggleLap, totalSelected }: LapT
         return series.flatMap(s => s.laps.filter(l => l.duration > 0));
     }, [series]);
 
-    if (allValidLaps.length === 0) return null;
-
-    const minDur = Math.min(...allValidLaps.map(l => l.duration));
-    const cutoff = minDur * 1.5;
-
     const chartSeries = useMemo(() => {
+        if (allValidLaps.length === 0) return [];
+        const minDur = Math.min(...allValidLaps.map(l => l.duration));
+        const cutoff = minDur * 1.5;
         return series.map(s => ({
             ...s,
             laps: s.laps.map(l => ({
@@ -63,7 +61,9 @@ function LapTimeChart({ series, selectedLaps, onToggleLap, totalSelected }: LapT
                 isValid: (!hideOutliers || !l.outlier) && l.duration > 0 && l.duration <= (hideOutliers ? minDur * 1.07 : cutoff)
             }))
         }));
-    }, [series, cutoff, hideOutliers]);
+    }, [series, allValidLaps, hideOutliers]);
+
+    if (allValidLaps.length === 0) return null;
 
     const validDurations = chartSeries.flatMap(s => s.laps.filter(l => l.isValid).map(l => l.duration));
     const lo = validDurations.length ? Math.min(...validDurations) : 0;
@@ -140,7 +140,7 @@ function LapTimeChart({ series, selectedLaps, onToggleLap, totalSelected }: LapT
                     })}
 
                     {chartSeries.map(s => {
-                        let paths: string[] = [];
+                        const paths: string[] = [];
                         let currentPath: string[] = [];
                         s.laps.forEach(l => {
                             if (l.isValid) {
@@ -176,7 +176,7 @@ function LapTimeChart({ series, selectedLaps, onToggleLap, totalSelected }: LapT
                                             key={l.lap_number}
                                             onClick={() => canSelect && onToggleLap(s.id, l)}
                                             className={canSelect ? 'cursor-crosshair' : 'cursor-not-allowed'}
-                                            style={{ pointerEvents: 'all' as any }}
+                                            style={{ pointerEvents: 'all' }}
                                         >
                                             <circle cx={x} cy={y} r="6" fill="transparent" />
                                             <circle
@@ -365,6 +365,8 @@ const compoundConfig: Record<string, {
     HARD:         { color: '#d9d9d9', darkText: true,  label: 'H', fullLabel: 'Hard' },
     INTERMEDIATE: { color: '#39b54a', darkText: false, label: 'I', fullLabel: 'Inter' },
     WET:          { color: '#0067ff', darkText: false, label: 'W', fullLabel: 'Wet' },
+    TEST_UNKNOWN: { color: '#8a8a8a', darkText: true,  label: '?', fullLabel: 'Unknown' },
+    UNKNOWN:      { color: '#8a8a8a', darkText: true,  label: '?', fullLabel: 'Unknown' },
 };
 
 // ── Stint cache types ────────────────────────────────────────────────────────
@@ -480,7 +482,6 @@ function SelectionItem({ sessionKey, drivers, selection, onUpdate, onRemove, can
     useEffect(() => {
         if (!selection.driver) return;
         const controller = new AbortController();
-        updateState({ loadingLaps: true, error: null });
         getLaps(parseInt(sessionKey), selection.driver!.driver_number, controller.signal)
             .then(data => {
                 updateState({ laps: data.filter(l => l.duration && l.duration > 0), loadingLaps: false });
@@ -519,6 +520,7 @@ function SelectionItem({ sessionKey, drivers, selection, onUpdate, onRemove, can
                                 let hex = d.team_colour || '555555';
                                 if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
                                 else if (hex.length !== 6) hex = '555555';
+                                updateState({ loadingLaps: true, error: null });
                                 onUpdate({ ...selection, driver: d, color: `#${hex}` });
                             }}
                         />
@@ -590,9 +592,9 @@ export default function CarDataDashboard({ sessionKey, meetingName, sessionName,
     // Multi-lap comparison selection: selectionId -> lap numbers
     const [comparisonLaps, setComparisonLaps] = useState<Record<string, number[]>>({});
 
+    // loadingDrivers starts true; sessionKey is fixed for the component's lifetime
     useEffect(() => {
         const controller = new AbortController();
-        setLoadingDrivers(true);
         getDrivers(sessionKey, controller.signal)
             .then(data => setDrivers(data.sort((a, b) => a.driver_number - b.driver_number)))
             .catch(() => { })
@@ -600,10 +602,9 @@ export default function CarDataDashboard({ sessionKey, meetingName, sessionName,
         return () => controller.abort();
     }, [sessionKey]);
 
-    // Fetch pace data
+    // Fetch pace data; loadingPace starts true, sessionKey is fixed for the component's lifetime
     useEffect(() => {
         const controller = new AbortController();
-        setLoadingPace(true);
         getPace(parseInt(sessionKey), controller.signal)
             .then(data => setPaceData(data))
             .catch(() => {})

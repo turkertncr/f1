@@ -2,8 +2,6 @@ package org.app.f1.entities;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.SQLInsert;
-import org.hibernate.jdbc.Expectation;
 
 import java.util.Objects;
 
@@ -53,7 +51,7 @@ public class Stint {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Stint stints = (Stint) o;
-        return Objects.equals(stintNumber, stints.stintNumber) && session == stints.session;
+        return Objects.equals(stintNumber, stints.stintNumber) && Objects.equals(session, stints.session);
     }
 
     @Override

@@ -7,16 +7,15 @@ import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import io.github.resilience4j.retry.annotation.Retry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.app.f1.dto.EntityMapper;
 import org.app.f1.dto.request.*;
 import org.app.f1.entities.*;
 import org.app.f1.exception.ResourceNotFoundException;
 import org.app.f1.exception.ServiceUnavailableException;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Component;
-import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.client.RestClient;
+import org.springframework.web.util.UriComponentsBuilder;
 
-import java.net.URI;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.HashMap;
@@ -34,7 +33,7 @@ public class OpenF1Client {
     private static final String RATE_LIMITER_NAME = "openF1RateLimiter";
     private static final String CIRCUIT_BREAKER_NAME = "openF1CircuitBreaker";
 
-    private final WebClient webClient;
+    private final RestClient restClient;
 
     @Retry(name = RETRY_NAME, fallbackMethod = "getMeetingsFallback")
     @RateLimiter(name = RATE_LIMITER_NAME, fallbackMethod = "getMeetingsFallback")
@@ -171,6 +170,7 @@ public class OpenF1Client {
 
     private SessionRequest getSessionFallback(int sessionKey, Throwable t) {
         log.error("Fallback triggered for getSession(sessionKey={}): {}", sessionKey, t.getMessage());
+        throwIfApiUnavailable(t);
         throw new ResourceNotFoundException("Session not found with key: " + sessionKey);
     }
 
@@ -201,7 +201,8 @@ public class OpenF1Client {
         return retrieveList(
                 OpenF1Endpoints.laps,
                 Map.of("session_key", sessionKey),
-                new ParameterizedTypeReference<>() {}
+                new ParameterizedTypeReference<>() {
+                }
         );
     }
 
@@ -243,33 +244,13 @@ public class OpenF1Client {
         return retrieveList(
                 OpenF1Endpoints.car_data,
                 Map.of("driver_number", driverNumber, "session_key", sessionKey),
-                new ParameterizedTypeReference<>() {}
-        );
-    }
-
-    private List<CarDataRequest> getAllCarDataFallback(int driverNumber, int sessionKey, Throwable t) {
-        log.error("Fallback triggered for getAllCarDataFallback(driverNumber={}, sessionKey={}): {})", driverNumber, sessionKey, t.getMessage());
-        throwIfApiUnavailable(t);
-        return Collections.emptyList();
-    }
-
-    @Retry(name = RETRY_NAME, fallbackMethod = "getRaceControlEventsFallback")
-    @RateLimiter(name = RATE_LIMITER_NAME, fallbackMethod = "getRaceControlEventsFallback")
-    @CircuitBreaker(name = CIRCUIT_BREAKER_NAME, fallbackMethod = "getRaceControlEventsFallback")
-    public List<RaceControlEventRequest> getRaceControlEvents(int sessionKey) {
-        log.debug("Fetching race control events for session: {}", sessionKey);
-        Map<String, Object> params = new HashMap<>();
-        params.put("session_key", sessionKey);
-        return retrieveList(
-                OpenF1Endpoints.race_control,
-                params,
                 new ParameterizedTypeReference<>() {
                 }
         );
     }
 
-    private List<RaceControlEventRequest> getRaceControlEventsFallback(int sessionKey, Throwable t) {
-        log.error("Fallback triggered for getRaceControlEvents(sessionKey={}): {})", sessionKey, t.getMessage());
+    private List<CarDataRequest> getAllCarDataFallback(int driverNumber, int sessionKey, Throwable t) {
+        log.error("Fallback triggered for getAllCarDataFallback(driverNumber={}, sessionKey={}): {})", driverNumber, sessionKey, t.getMessage());
         throwIfApiUnavailable(t);
         return Collections.emptyList();
     }
@@ -287,7 +268,8 @@ public class OpenF1Client {
         return retrieveList(
                 OpenF1Endpoints.location,
                 params,
-                new ParameterizedTypeReference<>() {}
+                new ParameterizedTypeReference<>() {
+                }
         );
     }
 
@@ -343,24 +325,18 @@ public class OpenF1Client {
 
     private <T> T retrieve(String path, Map<String, Object> params, ParameterizedTypeReference<T> typeRef) {
         try {
-            return webClient.get()
+            return restClient.get()
                     .uri(uriBuilder -> {
-                        uriBuilder.path(path);
-                        if (params != null) {
-                            params.forEach((k, v) -> {
-                                if (v != null) uriBuilder.queryParam(k, v);
-                            });
-                        }
-                        var uri = uriBuilder.build();
+                        var builder = UriComponentsBuilder.fromUri(uriBuilder.build()).path(path);
+                        params.forEach((k, v) -> {
+                            if (v != null) builder.queryParam(k, v);
+                        });
+                        var uri = builder.build().toUri();
                         log.info("OpenF1 API Request: {}", uri);
                         return uri;
                     })
                     .retrieve()
-                    .bodyToMono(typeRef)
-                    .block();
-        } catch (io.github.resilience4j.ratelimiter.RequestNotPermitted |
-                 io.github.resilience4j.circuitbreaker.CallNotPermittedException e) {
-            throw e;
+                    .body(typeRef);
         } catch (Exception e) {
             log.error("OpenF1 request failed for {}: {}", path, e.getMessage());
             throw e;

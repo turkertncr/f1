@@ -31,8 +31,9 @@ public record StintRequest(
 
     @Override
     public Stint buildEntity() {
+        Compound c = compound == null ? Compound.UNKNOWN : compound;
         return Stint.builder()
-                .compound(compound)
+                .compound(c)
                 .driverNumber(driverNumber)
                 .lapEnd(lapEnd)
                 .lapStart(lapStart)

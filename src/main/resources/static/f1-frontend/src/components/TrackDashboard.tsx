@@ -17,10 +17,21 @@ interface Props {
 
 export default function ComparativeTrackMap({ sessionKey, baseDriverNumber, baseLapNumber, driversData }: Props) {
   const [points, setPoints] = useState<Location[]>([]);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
-    getLocation(sessionKey, baseDriverNumber, baseLapNumber).then(setPoints);
+    const controller = new AbortController();
+    getLocation(sessionKey, baseDriverNumber, baseLapNumber, controller.signal)
+        .then(data => { setPoints(data); setError(false); })
+        .catch(() => { if (!controller.signal.aborted) setError(true); });
+    return () => controller.abort();
   }, [sessionKey, baseDriverNumber, baseLapNumber]);
+
+  if (error) return (
+      <div className="flex flex-col items-center justify-center h-full text-neutral-500 gap-3">
+          <span className="text-xs font-bold uppercase tracking-widest">No track data for this lap</span>
+      </div>
+  );
 
   if (points.length === 0 || driversData.length === 0) return (
       <div className="flex flex-col items-center justify-center h-full text-neutral-500 gap-3">

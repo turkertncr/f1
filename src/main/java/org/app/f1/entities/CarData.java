@@ -2,8 +2,6 @@ package org.app.f1.entities;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.SQLInsert;
-import org.hibernate.jdbc.Expectation;
 
 import java.time.Instant;
 

@@ -39,7 +39,7 @@ export interface Stint {
   stint_number: number;
   lap_start: number;
   lap_end: number;
-  compound: 'SOFT' | 'MEDIUM' | 'HARD' | 'INTERMEDIATE' | 'WET';
+  compound: 'SOFT' | 'MEDIUM' | 'HARD' | 'INTERMEDIATE' | 'WET' | 'TEST_UNKNOWN' | 'UNKNOWN';
   tyre_age: number;
   driver_number: number;
 }

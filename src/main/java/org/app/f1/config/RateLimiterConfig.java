@@ -10,12 +10,10 @@ import org.springframework.context.annotation.Configuration;
 @RequiredArgsConstructor
 public class RateLimiterConfig {
 
-    private final RateLimiter rateLimiter;
-
     @Bean
     public FilterRegistrationBean<RateLimiter> rateLimitingFilter() {
         FilterRegistrationBean<RateLimiter> registration = new FilterRegistrationBean<>();
-        registration.setFilter(rateLimiter);
+        registration.setFilter(new RateLimiter());
         registration.addUrlPatterns("/api/*");
         registration.setOrder(1);
         return registration;

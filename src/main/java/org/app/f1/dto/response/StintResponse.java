@@ -2,6 +2,7 @@ package org.app.f1.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
+import org.app.f1.entities.Compound;
 import org.app.f1.entities.Stint;
 
 @Builder
@@ -29,7 +30,7 @@ public record StintResponse(
                 .stintNumber(stint.getStintNumber())
                 .lapStart(stint.getLapStart())
                 .lapEnd(stint.getLapEnd())
-                .compound(stint.getCompound().name())
+                .compound(stint.getCompound() != null ? stint.getCompound().name() : Compound.UNKNOWN.name())
                 .tyreAge(stint.getTyreAge())
                 .driverNumber(stint.getDriverNumber())
                 .build();

@@ -28,7 +28,7 @@ public class CarDataService {
     private final OpenF1Client openF1Client;
     private final DataImportService dataImportService;
 
-    @Cacheable(value = "car_data", key = "#sessionKey + '-' + #lapNumber + '-' + #driverNumber")
+    @Cacheable(value = "car_data", key = "#sessionKey + '-' + #lapNumber + '-' + #driverNumber", unless = "#result.isEmpty()")
     public List<CarData> loadCarDataByLap(int sessionKey, int lapNumber, int driverNumber) {
 
         Lap lap = lapService.getLap(lapNumber, sessionKey, driverNumber);

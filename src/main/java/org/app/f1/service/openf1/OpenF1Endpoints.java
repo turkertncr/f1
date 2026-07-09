@@ -9,5 +9,4 @@ public class OpenF1Endpoints {
     public static final String sessions = "/sessions";
     public static final String meetings = "/meetings";
     public static final String car_data = "/car_data";
-    public static final String race_control = "/race_control";
 }

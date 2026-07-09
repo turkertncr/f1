@@ -29,8 +29,6 @@ public record ResultResponse(
                 .laps(result.getLaps())
                 .driver(driver)
                 .position(result.getPosition())
-                .laps(result.getLaps())
-                .position(result.getPosition())
                 .build();
     }
 }

@@ -299,10 +299,12 @@ export default function ComparisonPanel({ sessionKey, entries, onRemoveEntry, on
 
     // Abort all in-flight requests only on true unmount
     useEffect(() => {
+        const controllers = controllersRef.current;
+        const keys = fetchedKeys.current;
         return () => {
-            controllersRef.current.forEach(c => c.abort());
-            controllersRef.current.clear();
-            fetchedKeys.current.clear();
+            controllers.forEach(c => c.abort());
+            controllers.clear();
+            keys.clear();
         };
     }, []);
 

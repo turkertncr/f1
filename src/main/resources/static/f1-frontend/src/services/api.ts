@@ -74,8 +74,8 @@ export const getCarData = async (sessionKey: number, driverNumber: number, lapNu
 /**
  * Fetch location data for a driver in specific lap of a session
  */
-export const getLocation = async (sessionKey: number, driverNumber: number, lapNumber: number): Promise<Location[]> => {
-  const response = await backendApi.get<Location[]>(`/locations?sessionKey=${sessionKey}&driverNumber=${driverNumber}&lapNumber=${lapNumber}`);
+export const getLocation = async (sessionKey: number, driverNumber: number, lapNumber: number, signal?: AbortSignal): Promise<Location[]> => {
+  const response = await backendApi.get<Location[]>(`/locations?sessionKey=${sessionKey}&driverNumber=${driverNumber}&lapNumber=${lapNumber}`, {signal});
   return response.data;
 }
 

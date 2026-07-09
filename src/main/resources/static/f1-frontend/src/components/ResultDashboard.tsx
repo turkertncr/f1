@@ -17,7 +17,7 @@ const isQualifying = (sessionType: string) => {
     return sessionType.toLowerCase().includes('qualifying');
 };
 
-const formatGap = (gap: string[] | null, position: number, dnf: boolean, dsq: boolean, dns: boolean) => {
+const formatGap = (gap: string[] | null, position: number, dnf: boolean, dns: boolean, dsq: boolean) => {
     if (dnf) return "DNF";
     if (dsq) return "DSQ";
     if (dns) return "DNS";
