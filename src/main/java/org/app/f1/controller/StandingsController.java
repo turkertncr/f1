@@ -2,10 +2,7 @@ package org.app.f1.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.app.f1.service.StandingsService;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -16,16 +13,16 @@ public class StandingsController {
 
     private final StandingsService standingsService;
 
-    @GetMapping("/drivers/{year}")
+    @GetMapping("/drivers")
     public List<?> getDriverStandings(
-            @PathVariable int year
+            @RequestParam int year
     ) {
         return standingsService.getDriverStandings(year);
     }
 
-    @GetMapping("/teams/{year}")
+    @GetMapping("/teams")
     public List<?> getConstructorsStandings(
-            @PathVariable int year
+            @RequestParam int year
     ) {
         return standingsService.getTeamStandings(year);
     }

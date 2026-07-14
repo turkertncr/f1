@@ -14,6 +14,7 @@ import org.app.f1.repositories.DriverStandingsRepo;
 import org.app.f1.repositories.TeamRepo;
 import org.app.f1.repositories.TeamStandingsRepo;
 import org.app.f1.service.openf1.OpenF1Client;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -34,6 +35,7 @@ public class StandingsService {
     private final DriverEntryRepo driverEntryRepo;
     private final DriverService driverService;
 
+    @Cacheable(value = "teams_standings", key = "#year", unless = "#result.isEmpty()")
     public List<TeamStandingsResponse> getTeamStandings(int year) {
 
         int sessionKey = sessionService.getLastSessionKeyByYear(year);
@@ -60,6 +62,7 @@ public class StandingsService {
                 .toList();
     }
 
+    @Cacheable(value = "drivers_standings", key = "#year", unless = "#result.isEmpty()")
     public List<DriverStandingsResponse> getDriverStandings(int year) {
 
         int sessionKey = sessionService.getLastSessionKeyByYear(year);
