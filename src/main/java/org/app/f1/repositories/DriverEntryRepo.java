@@ -13,6 +13,8 @@ public interface DriverEntryRepo extends JpaRepository<DriverEntry, Long> {
 
     List<DriverEntry> findByDriverInAndSeason(java.util.Collection<Driver> drivers, int season);
 
+    List<DriverEntry> findBySeason(int season);
+
     long countByDriverInAndSeason(java.util.Collection<Driver> drivers, int season);
 }
 

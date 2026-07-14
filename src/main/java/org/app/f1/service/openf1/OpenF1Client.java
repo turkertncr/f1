@@ -273,6 +273,41 @@ public class OpenF1Client {
         );
     }
 
+    @Retry(name = RETRY_NAME, fallbackMethod = "getStandingsFallback")
+    @RateLimiter(name = RATE_LIMITER_NAME, fallbackMethod = "getStandingsFallback")
+    @CircuitBreaker(name = CIRCUIT_BREAKER_NAME, fallbackMethod = "getStandingsFallback")
+    public List<TeamStandings> getTeamsStandings(int sessionKey) {
+        log.debug("Fetching team standings for session: {}",
+                sessionKey);
+        return retrieveList(
+                OpenF1Endpoints.teams_standings,
+                Map.of("session_key", sessionKey),
+                new
+                        ParameterizedTypeReference<List<TeamStandings>>() {}
+        );
+    }
+
+    @Retry(name = RETRY_NAME, fallbackMethod = "getStandingsFallback")
+    @RateLimiter(name = RATE_LIMITER_NAME, fallbackMethod = "getStandingsFallback")
+    @CircuitBreaker(name = CIRCUIT_BREAKER_NAME, fallbackMethod = "getStandingsFallback")
+    public List<DriverStandings> getDriversStandings(int sessionKey) {
+        log.debug("Fetching driver standings for session: {}",
+                sessionKey);
+        return retrieveList(
+                OpenF1Endpoints.drivers_standings,
+                Map.of("session_key", sessionKey),
+                new
+                        ParameterizedTypeReference<List<DriverStandings>>() {}
+        );
+    }
+
+    private List<Standings> getStandingsFallback(int sessionKey, Throwable t) {
+        log.error("Fallback triggered for standings(sessionKey={}): {}", sessionKey, t.getMessage());
+        throwIfApiUnavailable(t);
+        return Collections.emptyList();
+    }
+
+
     private List<LocationRequest> getLocationsFallback(int sessionKey, int driverNumber, Instant dateStart, Instant dateEnd, Throwable t) {
         log.error("Fallback triggered for getLocations(sessionKey={}, driverNumber={}): {}", sessionKey, driverNumber, t.getMessage());
         throwIfApiUnavailable(t);

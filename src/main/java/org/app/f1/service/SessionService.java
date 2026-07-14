@@ -1,6 +1,7 @@
 package org.app.f1.service;
 
 import lombok.RequiredArgsConstructor;
+import org.app.f1.dto.response.MeetingResponse;
 import org.app.f1.dto.response.SessionResponse;
 import org.app.f1.entities.Meeting;
 import org.app.f1.entities.Session;
@@ -22,6 +23,7 @@ public class SessionService {
     private final MeetingRepo meetingRepo;
     private final OpenF1Client openF1Client;
     private final DataImportService dataImportService;
+    private final MeetingService meetingService;
 
     @Cacheable(value = "sessions", key = "#meetingKey")
     public List<SessionResponse> findSessions(int meetingKey) {
@@ -58,6 +60,19 @@ public class SessionService {
             return session;
         }
         return sessionOptional.get();
+    }
+
+    public int getLastSessionKeyByYear(int year) {
+        int lastMeetingKey =
+                meetingService.loadAllByYear(year).stream()
+                        .mapToInt(MeetingResponse::meetingKey)
+                        .max()
+                        .orElseThrow(() -> new ResourceNotFoundException("No meetings found for year " + year));
+
+        findSessions(lastMeetingKey);
+
+        return sessionRepo.findLastSessionKeyByYear(year)
+                .orElseThrow(() -> new ResourceNotFoundException("No sessions found for year " + year)).getSessionKey();
     }
 
 }

@@ -14,7 +14,9 @@ import java.util.Objects;
         name = "locations",
         uniqueConstraints = {
                 @UniqueConstraint(columnNames = {"date", "driver_number"})
-        }
+        },
+        indexes = @Index(name = "idx_location_session_driver_date",
+        columnList = "session_id, driver_number, date")
 )
 @Builder
 @AllArgsConstructor
