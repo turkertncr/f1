@@ -45,6 +45,9 @@ public class Meeting {
     @Column(name = "date_start")
     private Instant dateStart;
 
+    @Column(name = "date_end")
+    private Instant dateEnd;
+
     private int year;
 
     @Override

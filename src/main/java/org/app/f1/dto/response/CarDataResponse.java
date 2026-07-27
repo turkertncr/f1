@@ -8,15 +8,33 @@ import java.time.Instant;
 
 @Builder
 public record CarDataResponse(
-        @JsonProperty("id") Long id,
-        @JsonProperty("session_id") Long sessionId,
-        @JsonProperty("driver_number") Integer driverNumber,
-        @JsonProperty("date") Instant date,
-        @JsonProperty("brake") Boolean brake,
-        @JsonProperty("speed") Integer speed,
-        @JsonProperty("gear") Integer gear,
-        @JsonProperty("throttle") Integer throttle,
-        @JsonProperty("drs") Integer drs
+
+        @JsonProperty("id")
+        Long id,
+
+        @JsonProperty("session_id")
+        Long sessionId,
+
+        @JsonProperty("driver_number")
+        Integer driverNumber,
+
+        @JsonProperty("date")
+        Instant date,
+
+        @JsonProperty("brake")
+        Boolean brake,
+
+        @JsonProperty("speed")
+        Integer speed,
+
+        @JsonProperty("gear")
+        Integer gear,
+
+        @JsonProperty("throttle")
+        Integer throttle,
+
+        @JsonProperty("drs")
+        Integer drs
 ) {
     public static CarDataResponse fromEntity(CarData carData) {
         return CarDataResponse.builder()

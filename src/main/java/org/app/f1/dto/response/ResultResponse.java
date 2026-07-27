@@ -8,15 +8,32 @@ import java.util.List;
 
 @Builder
 public record ResultResponse(
-        @JsonProperty("dnf") Boolean dnf,
-        @JsonProperty("dns") Boolean dns,
-        @JsonProperty("dsq") Boolean dsq,
-        @JsonProperty("driver_number") Integer driverNumber,
-        @JsonProperty("duration") List<Double> duration,
-        @JsonProperty("gap_to_leader") List<String> gapToLeader,
-        @JsonProperty("laps") Double laps,
-        @JsonProperty("position") Integer position,
-        @JsonProperty("driver") DriverResponse driver
+        @JsonProperty("dnf")
+        Boolean dnf,
+
+        @JsonProperty("dns")
+        Boolean dns,
+
+        @JsonProperty("dsq")
+        Boolean dsq,
+
+        @JsonProperty("driver_number")
+        Integer driverNumber,
+
+        @JsonProperty("duration")
+        List<Double> duration,
+
+        @JsonProperty("gap_to_leader")
+        List<String> gapToLeader,
+
+        @JsonProperty("laps")
+        Double laps,
+
+        @JsonProperty("position")
+        Integer position,
+
+        @JsonProperty("driver")
+        DriverResponse driver
 ) {
     public static ResultResponse fromEntity(Result result, DriverResponse driver) {
         return ResultResponse.builder()

@@ -7,6 +7,7 @@ import org.app.f1.entities.*;
 import org.app.f1.exception.ResourceNotFoundException;
 import org.app.f1.repositories.DriverEntryRepo;
 import org.app.f1.repositories.LapRepo;
+import org.app.f1.repositories.SectorRepo;
 import org.app.f1.service.openf1.OpenF1Client;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
@@ -16,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -27,40 +29,52 @@ public class LapService {
     private final DataImportService dataImportService;
     private final DriverEntryRepo driverEntryRepo;
     private final LapRepo lapRepo;
+    private final SectorRepo sectorRepo;
 
     @Value("${outlier_threshold}")
     private double OUTLIER_THRESHOLD;
 
     @Cacheable(value = "laps", key = "#sessionKey + '-' + #driverNumber", unless = "#result.isEmpty()")
     public List<Lap> getLaps(int sessionKey, int driverNumber) {
-        var laps = lapRepo.findAllBySessionKeyAndDriverNumber(sessionKey, driverNumber);
-        if (!laps.isEmpty()) {
-            return laps;
+        if (sectorRepo.existsByLapSessionSessionKeyAndLapDriverNumber(sessionKey, driverNumber)) {
+            return lapRepo.findAllBySessionKeyAndDriverNumber(sessionKey, driverNumber);
         }
 
-        Session session = sessionService.fetchSession(sessionKey);
+        List<Lap> laps = lapRepo.getAllBySessionKeyAndDriverNumber(sessionKey, driverNumber);
         List<LapRequest> requests = openF1Client.getLaps(sessionKey, driverNumber);
 
-        double median = computeMedian(requests);
-        List<Lap> newLaps = filterOutlier(requests, session, median);
+        if (laps.isEmpty()) {
+            Session session = sessionService.fetchSession(sessionKey);
+            double median = computeMedian(requests);
+            dataImportService.saveAllLaps(filterOutlier(requests, session, median));
+            laps = lapRepo.getAllBySessionKeyAndDriverNumber(sessionKey, driverNumber);
+        }
 
-        dataImportService.saveAllLaps(newLaps);
+        saveSectors(laps, requests);
 
-        List<Lap> savedLaps = lapRepo.findAllBySessionKeyAndDriverNumber(sessionKey, driverNumber);
-        Map<Integer, Lap> byLapNumber = savedLaps.stream()
-                .collect(Collectors.toMap(Lap::getLapNumber, l -> l));
+        return lapRepo.findAllBySessionKeyAndDriverNumber(sessionKey, driverNumber);
+    }
 
-        List<Sector> sectors = newLaps.stream()
-                .filter(l -> byLapNumber.containsKey(l.getLapNumber()))
-                .flatMap(l -> l.getSectors().stream()
-                        .peek(s -> s.setLap(byLapNumber.get(l.getLapNumber()))))
+    private void saveSectors(List<Lap> savedLaps, List<LapRequest> requests) {
+        Map<String, Lap> byDriverAndLapNumber = savedLaps.stream()
+                .collect(Collectors.toMap(l -> l.getDriverNumber() + "-" + l.getLapNumber(), l -> l));
+
+        List<Sector> sectors = requests.stream()
+                .flatMap(request -> {
+                    Lap lap = byDriverAndLapNumber.get(request.driverNumber() + "-" + request.lapNumber());
+                    if (lap == null) {
+                        return Stream.<Sector>empty();
+                    }
+                    return Stream.of(
+                            buildSector(lap, 1, request.sectorDuration1(), request.sectorSegments1()),
+                            buildSector(lap, 2, request.sectorDuration2(), request.sectorSegments2()),
+                            buildSector(lap, 3, request.sectorDuration3(), request.sectorSegments3()));
+                })
                 .toList();
 
         if (!sectors.isEmpty()) {
             dataImportService.saveAllSectors(sectors);
         }
-
-        return lapRepo.findAllBySessionKeyAndDriverNumber(sessionKey, driverNumber);
     }
 
     private List<Lap> filterOutlier(List<LapRequest> laps, Session session, double median) {
@@ -68,7 +82,7 @@ public class LapService {
                 .map(request -> {
                     boolean isOutlier = request.duration() != null
                             && request.duration() > median * OUTLIER_THRESHOLD;
-                    return toLap(request, session, isOutlier);
+                    return request.buildEntity(session, isOutlier);
                 })
                 .toList();
     }
@@ -105,6 +119,7 @@ public class LapService {
             double median = computeMedian(requestedLaps);
             dataImportService.saveAllLaps(filterOutlier(requestedLaps, session, median));
             allLaps = lapRepo.getAllBySessionKey(sessionKey);
+            saveSectors(allLaps, requestedLaps);
         }
         return allLaps;
     }
@@ -117,14 +132,6 @@ public class LapService {
                 .toList();
         if (durations.isEmpty()) return Double.MAX_VALUE;
         return durations.get(durations.size() / 2);
-    }
-
-    private Lap toLap(LapRequest request, Session session, boolean isOutlier) {
-        Lap lap = request.buildEntity(session, isOutlier);
-        lap.getSectors().add(buildSector(lap, 1, request.sectorDuration1(), request.sectorSegments1()));
-        lap.getSectors().add(buildSector(lap, 2, request.sectorDuration2(), request.sectorSegments2()));
-        lap.getSectors().add(buildSector(lap, 3, request.sectorDuration3(), request.sectorSegments3()));
-        return lap;
     }
 
     private Sector buildSector(Lap lap, int order, Double duration, List<Integer> segments) {

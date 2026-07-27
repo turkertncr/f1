@@ -22,6 +22,6 @@ public class MeetingController {
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     public List<MeetingResponse> loadAllMeetings(@Min(1950) @Max(2100) @RequestParam int year) {
-        return meetingService.loadAllByYear(year);
+        return meetingService.getMeetingResponse(year);
     }
 }

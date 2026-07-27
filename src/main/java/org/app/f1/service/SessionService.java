@@ -12,6 +12,8 @@ import org.app.f1.service.openf1.OpenF1Client;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -26,7 +28,7 @@ public class SessionService {
     private final MeetingService meetingService;
 
     @Cacheable(value = "sessions", key = "#meetingKey")
-    public List<SessionResponse> findSessions(int meetingKey) {
+    public List<Session> findSessions(int meetingKey) {
         List<Session> sessions = sessionRepo.findAllByMeeting_MeetingKey(meetingKey);
 
         if (sessions.isEmpty()) {
@@ -43,7 +45,12 @@ public class SessionService {
                         "No sessions found for meeting: " + meeting.getName() + " (key: " + meetingKey + ")");
             }
         }
-        return sessions.stream().map(SessionResponse::fromEntity).toList();
+        return sessions;
+    }
+
+    @Cacheable(value = "sessions_responses", key = "#meetingKey")
+    public List<SessionResponse> getSessionsResponse(int meetingKey) {
+        return findSessions(meetingKey).stream().map(SessionResponse::fromEntity).toList();
     }
 
     public Session fetchSession(int sessionKey) {
@@ -63,16 +70,31 @@ public class SessionService {
     }
 
     public int getLastSessionKeyByYear(int year) {
-        int lastMeetingKey =
-                meetingService.loadAllByYear(year).stream()
-                        .mapToInt(MeetingResponse::meetingKey)
-                        .max()
-                        .orElseThrow(() -> new ResourceNotFoundException("No meetings found for year " + year));
 
-        findSessions(lastMeetingKey);
+        int lastMeetingKey = 0;
+        var meetings = meetingService.loadAllByYear(year);
 
-        return sessionRepo.findLastSessionKeyByYear(year)
-                .orElseThrow(() -> new ResourceNotFoundException("No sessions found for year " + year)).getSessionKey();
+        long minDuration = Long.MAX_VALUE;
+        for (Meeting meeting : meetings) {
+            if (meeting.getDateEnd().isAfter(Instant.now())) {
+                continue;
+            }
+
+            long now =  System.currentTimeMillis();
+            long meetingEnd = meeting.getDateEnd().toEpochMilli();
+
+            long duration = now - meetingEnd;
+
+            if (minDuration > duration) {
+                minDuration = duration;
+                lastMeetingKey = meeting.getMeetingKey();
+            }
+        }
+
+        int finalLastMeetingKey = lastMeetingKey;
+        Session last = findSessions(lastMeetingKey).stream().max(Comparator.comparing(Session::getDateEnd))
+                .orElseThrow(() -> new RuntimeException("No session found for meeting key %d".formatted(finalLastMeetingKey)));
+
+        return last.getSessionKey();
     }
-
 }

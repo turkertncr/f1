@@ -33,4 +33,12 @@ public interface LapRepo extends JpaRepository<Lap, Long> {
             where l.session.sessionKey = :sessionKey
             """)
     List<Lap> getAllBySessionKey(int sessionKey);
+
+    @Query("""
+                select l from Lap l
+                where l.session.sessionKey = :sessionKey
+                and l.driverNumber = :driverNumber
+                order by l.lapNumber asc
+            """)
+    List<Lap> getAllBySessionKeyAndDriverNumber(int sessionKey, int driverNumber);
 }

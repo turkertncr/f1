@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { Meeting, Session, Result, Driver, Stint, CarData, Lap, Location, Pace } from '../types';
+import type { Meeting, Session, Result, Driver, Stint, CarData, Lap, Location, Pace, DriverStanding, TeamStanding } from '../types';
 
 // Backend API URL
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
@@ -84,6 +84,22 @@ export const getLocation = async (sessionKey: number, driverNumber: number, lapN
  */
 export const getPace = async (sessionKey: number, signal?: AbortSignal): Promise<Pace[]> => {
   const response = await backendApi.get<Pace[]>(`/laps/pace?sessionKey=${sessionKey}`, { signal });
+  return response.data;
+};
+
+/**
+ * Fetch driver championship standings for a season
+ */
+export const getDriverStandings = async (year: number, signal?: AbortSignal): Promise<DriverStanding[]> => {
+  const response = await backendApi.get<DriverStanding[]>(`/standings/drivers?year=${year}`, { signal });
+  return response.data;
+};
+
+/**
+ * Fetch constructor championship standings for a season
+ */
+export const getTeamStandings = async (year: number, signal?: AbortSignal): Promise<TeamStanding[]> => {
+  const response = await backendApi.get<TeamStanding[]>(`/standings/teams?year=${year}`, { signal });
   return response.data;
 };
 

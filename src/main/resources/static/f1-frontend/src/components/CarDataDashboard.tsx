@@ -5,6 +5,11 @@ import { getDrivers, getLaps, getPace, getDriverStints } from '../services/api';
 import ComparisonPanel from './ComparisonPanel';
 import type { ComparisonEntry } from './ComparisonPanel';
 import type { Driver, Lap, Pace, Stint } from '../types';
+import softTyre from '../../assets/SOFT.svg';
+import mediumTyre from '../../assets/MEDIUM.svg';
+import hardTyre from '../../assets/HARD.svg';
+import intermediateTyre from '../../assets/INTERMEDIATE.svg';
+import wetTyre from '../../assets/WET.svg';
 
 interface Props {
     sessionKey: string;
@@ -359,12 +364,13 @@ const compoundConfig: Record<string, {
     darkText: boolean;
     label: string;
     fullLabel: string;
+    icon?: string;
 }> = {
-    SOFT:         { color: '#e8002d', darkText: false, label: 'S', fullLabel: 'Soft' },
-    MEDIUM:       { color: '#ffd700', darkText: true,  label: 'M', fullLabel: 'Medium' },
-    HARD:         { color: '#d9d9d9', darkText: true,  label: 'H', fullLabel: 'Hard' },
-    INTERMEDIATE: { color: '#39b54a', darkText: false, label: 'I', fullLabel: 'Inter' },
-    WET:          { color: '#0067ff', darkText: false, label: 'W', fullLabel: 'Wet' },
+    SOFT:         { color: '#e8002d', darkText: false, label: 'S', fullLabel: 'Soft',   icon: softTyre },
+    MEDIUM:       { color: '#ffd700', darkText: true,  label: 'M', fullLabel: 'Medium', icon: mediumTyre },
+    HARD:         { color: '#d9d9d9', darkText: true,  label: 'H', fullLabel: 'Hard',   icon: hardTyre },
+    INTERMEDIATE: { color: '#39b54a', darkText: false, label: 'I', fullLabel: 'Inter',  icon: intermediateTyre },
+    WET:          { color: '#0067ff', darkText: false, label: 'W', fullLabel: 'Wet',    icon: wetTyre },
     TEST_UNKNOWN: { color: '#8a8a8a', darkText: true,  label: '?', fullLabel: 'Unknown' },
     UNKNOWN:      { color: '#8a8a8a', darkText: true,  label: '?', fullLabel: 'Unknown' },
 };
@@ -423,23 +429,32 @@ function InlineStints({ stints, loading }: { stints: Stint[]; loading: boolean }
                             <div className="absolute inset-x-0 top-0 h-2/5 bg-gradient-to-b from-white/20 to-transparent pointer-events-none" />
                             <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
 
-                            {/* Tyre badge */}
-                            <div
-                                className="relative z-10 w-[16px] h-[16px] rounded-full flex items-center justify-center shrink-0"
-                                style={{
-                                    backgroundColor: badgeBg,
-                                    border: `1px solid ${badgeBorder}`,
-                                    boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.15)',
-                                }}
-                            >
-                                <span className="text-[9px] font-black leading-none" style={{ color: textAlpha }}>
-                                    {cfg.label}
+                          {/* Tyre badge */}
+                          <div
+                              className="relative z-10 w-[20px] h-[20px] rounded-full flex items-center justify-center shrink-0 overflow-hidden"
+                              style={{
+                                backgroundColor: badgeBg,
+                                border: `1px solid ${badgeBorder}`,
+                                boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.15)',
+                              }}
+                          >
+                            {/* Tyre compound icon, letter badge as fallback */}
+                            {cfg.icon ? (
+                                <img
+                                    src={cfg.icon}
+                                    alt={`${cfg.fullLabel} tyre`}
+                                    className="absolute inset-0 w-full h-full object-contain"
+                                />
+                            ) : (
+                                <span className="relative z-10 text-[9px] font-black leading-none" style={{color: textAlpha}}>
+                                  {cfg.label}
                                 </span>
-                            </div>
+                            )}
+                          </div>
 
-                            {/* Lap count */}
-                            {widthPct > 8 && (
-                                <span className="relative z-10 text-[8px] font-bold leading-none tabular-nums" style={{ color: subAlpha }}>
+                          {/* Lap count */}
+                          {widthPct > 8 && (
+                                <span className="relative z-10 text-[10px] font-extrabold leading-none tabular-nums" style={{ color: subAlpha }}>
                                     {laps}L
                                 </span>
                             )}

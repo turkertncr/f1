@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import SessionSelector from './components/SessionSelector';
+import MainPage from './components/MainPage';
 import ResultDashboard from './components/ResultDashboard';
 import CarDataDashboard from './components/CarDataDashboard';
 
@@ -48,7 +48,7 @@ export default function App() {
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.4, ease: 'easeOut' }}
           >
-            <SessionSelector onSessionSelect={handleSessionSelect} />
+            <MainPage onSessionSelect={handleSessionSelect} />
           </motion.div>
         )}
 

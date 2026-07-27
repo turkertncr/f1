@@ -460,37 +460,39 @@ export default function ComparisonPanel({ sessionKey, entries, onRemoveEntry, on
                 ))}
             </div>
 
-            {/* Sector Times */}
-            <SectorTimesTable entries={entries} />
-
-            {/* Speed Dominance Map + Telemetry */}
+            {/* Sector Times + Track Map + Telemetry */}
             <div className="flex flex-col gap-6">
-                {/* Track Map — top right, above the charts */}
-                <div className="w-full lg:w-1/2 xl:w-5/12 lg:self-end bg-neutral-900/40 border border-neutral-800 rounded-3xl p-6 relative flex flex-col min-h-[400px]">
-                    <div className="flex items-center gap-2 mb-4">
-                        <span className="text-xs font-black uppercase tracking-widest text-neutral-400 drop-shadow-sm flex items-center gap-2">
-                            Speed Dominance Map
-                        </span>
+                {/* Sector Times (left) + Track Map (right), above the charts */}
+                <div className="flex flex-col lg:flex-row gap-6 lg:items-start">
+                    <div className="flex-1 min-w-0">
+                        <SectorTimesTable entries={entries} />
                     </div>
-                    <div className="flex-1 w-full h-full min-h-[300px] relative flex items-center justify-center bg-neutral-950/50 rounded-2xl border border-neutral-800/50 shadow-inner p-4">
-                        {validEntries.length > 0 ? (
-                            <ComparativeTrackMap
-                                sessionKey={parseInt(sessionKey)}
-                                baseDriverNumber={validEntries[0].driver.driver_number}
-                                baseLapNumber={validEntries[0].lap.lap_number}
-                                driversData={driversForMap}
-                            />
-                        ) : (
-                            <div className="flex flex-col items-center justify-center gap-2">
-                                <div className="w-5 h-5 border-2 border-neutral-500 border-t-transparent rounded-full animate-spin" />
-                                <span className="text-neutral-600 text-xs font-bold uppercase tracking-widest text-center">Loading telemetry data…</span>
-                            </div>
-                        )}
+                    <div className="w-full lg:w-1/2 xl:w-5/12 bg-neutral-900/40 border border-neutral-800 rounded-3xl p-6 relative flex flex-col min-h-[100px]">
+                        <div className="flex items-center gap-2 mb-4">
+                            <span className="text-xs font-black uppercase tracking-widest text-neutral-400 drop-shadow-sm flex items-center gap-2">
+                                Speed Dominance Map
+                            </span>
+                        </div>
+                        <div className="flex-1 w-full h-full min-h-[180px] max-h-[330px] relative flex items-center justify-center bg-neutral-950/50 rounded-2xl border border-neutral-800/50 shadow-inner p-4">
+                            {validEntries.length > 0 ? (
+                                <ComparativeTrackMap
+                                    sessionKey={parseInt(sessionKey)}
+                                    baseDriverNumber={validEntries[0].driver.driver_number}
+                                    baseLapNumber={validEntries[0].lap.lap_number}
+                                    driversData={driversForMap}
+                                />
+                            ) : (
+                                <div className="flex flex-col items-center justify-center gap-2">
+                                    <div className="w-5 h-5 border-2 border-neutral-500 border-t-transparent rounded-full animate-spin" />
+                                    <span className="text-neutral-600 text-xs font-bold uppercase tracking-widest text-center">Loading telemetry data…</span>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>
 
-                {/* Telemetry Charts — full width */}
-                <div className="w-full flex flex-col gap-5">
+                {/* Telemetry Charts */}
+                <div className="w-full max-w-5xl mx-auto flex flex-col gap-5">
                     <TelemetryChart series={speedSeries} label="Speed" min={0} max={380} height={480} hoveredPct={hoveredPct} onHover={setHoveredPct} />
                     <TelemetryChart series={throttleSeries} label="Throttle" min={0} max={100} hoveredPct={hoveredPct} onHover={setHoveredPct} />
                     <TelemetryChart series={gearSeries} label="Gear" min={0} max={8} hoveredPct={hoveredPct} onHover={setHoveredPct} />

@@ -32,6 +32,16 @@
 
     <dependencies>
         <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-core</artifactId>
+        </dependency>
+        <!-- Flyway 10+ split database support out of core; without this the app
+             fails at startup with "Unsupported Database: PostgreSQL". -->
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-database-postgresql</artifactId>
+        </dependency>
+        <dependency>
             <groupId>io.github.resilience4j</groupId>
             <artifactId>resilience4j-spring-boot3</artifactId>
             <version>2.1.0</version>
@@ -86,6 +96,7 @@
                     <exclude>static/f1-frontend/node_modules/**</exclude>
                     <exclude>static/f1-frontend/.vite/**</exclude>
                     <exclude>static/f1-frontend/dist/**</exclude>
+                    <exclude>application-local.properties</exclude>
                 </excludes>
             </resource>
         </resources>

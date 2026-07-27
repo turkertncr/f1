@@ -80,3 +80,15 @@ export interface Pace {
   driver: Driver;
   pace: number;
 }
+
+export interface DriverStanding {
+  full_name: string | null;
+  driver_number: number;
+  points: number;
+}
+
+export interface TeamStanding {
+  team_name: string;
+  points: number;
+  team_colour: string | null;
+}

@@ -44,7 +44,7 @@ export default function ComparativeTrackMap({ sessionKey, baseDriverNumber, base
   const ys = points.map(p => p.y);
   const minX = Math.min(...xs), maxX = Math.max(...xs);
   const minY = Math.min(...ys), maxY = Math.max(...ys);
-  const pad = 500; // Adding padding for track edges
+  const pad = 650; // Adding padding for track edges
 
   // OpenF1 coordinates are Y-up but SVG is Y-down, so flip vertically:
   // paths are drawn in raw coordinates inside a scale(1,-1) group, which maps
@@ -65,19 +65,19 @@ export default function ComparativeTrackMap({ sessionKey, baseDriverNumber, base
   } else {
       let currentPath = `M ${points[0].x} ${points[0].y}`;
       let currentColor = validDrivers[0].color;
-      
+
       const N = points.length;
-      
+
       for (let i = 1; i < N; i++) {
           const progress = i / (N - 1);
-          
+
           // Find the fastest driver at this progress point
           let maxSpeed = -1;
           let fastestColor = '#555';
-          
+
           for (const driver of validDrivers) {
               const speedIndex = Math.min(
-                  driver.speeds.length - 1, 
+                  driver.speeds.length - 1,
                   Math.round(progress * (driver.speeds.length - 1))
               );
               const speed = driver.speeds[speedIndex] ?? 0;
@@ -86,7 +86,7 @@ export default function ComparativeTrackMap({ sessionKey, baseDriverNumber, base
                   fastestColor = driver.color;
               }
           }
-          
+
           const dist = Math.hypot(points[i].x - points[i - 1].x, points[i].y - points[i - 1].y);
           if (dist < 4000) {
               if (fastestColor !== currentColor) {
@@ -105,7 +105,7 @@ export default function ComparativeTrackMap({ sessionKey, baseDriverNumber, base
   }
 
   return (
-      <svg viewBox={viewBox} className="w-full h-full drop-shadow-2xl">
+      <svg viewBox={viewBox} className="w-full h-full max-h-[300px] drop-shadow-2xl">
           <g transform="scale(1, -1)">
               {segments.map((seg, idx) => (
                   <path
@@ -113,10 +113,10 @@ export default function ComparativeTrackMap({ sessionKey, baseDriverNumber, base
                       d={seg.path}
                       fill="none"
                       stroke={seg.color}
-                      strokeWidth={250}
+                      strokeWidth={450}
                       strokeLinecap="round"
                       strokeLinejoin="round"
-                      className="transition-all duration-300"
+                      className="transition-all duration-360"
                   />
               ))}
           </g>

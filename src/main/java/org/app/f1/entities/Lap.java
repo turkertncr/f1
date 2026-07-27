@@ -38,6 +38,7 @@ public class Lap {
     private Integer driverNumber;
 
     @OneToMany(mappedBy = "lap", cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
+    @OrderBy("sector asc")
     @Builder.Default
     private List<Sector> sectors = new ArrayList<>();
 
@@ -56,6 +57,6 @@ public class Lap {
             throw new ResourceNotFoundException(
                     "Lap " + lapNumber + " of driver " + driverNumber + " has no duration");
         }
-        return lapStart.plusMillis((long) (duration * 1000) + 250);
+        return lapStart.plusMillis((long) (duration * 1001));
     }
 }

@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-
 @Service
 @RequiredArgsConstructor
 public class MeetingService {
@@ -21,7 +20,7 @@ public class MeetingService {
     private final DataImportService dataImportService;
 
     @Cacheable(value = "meetings", key = "#year")
-    public List<MeetingResponse> loadAllByYear(int year) {
+    public List<Meeting> loadAllByYear(int year) {
         List<Meeting> meetings = meetingRepo.findAllByYear(year);
         if (meetings.isEmpty()) {
             meetings = openF1Client.getMeetings(year);
@@ -31,6 +30,11 @@ public class MeetingService {
                 throw new ResourceNotFoundException("No meetings found for year " + year);
             }
         }
-        return meetings.stream().map(MeetingResponse::fromEntity).toList();
+        return meetings;
+    }
+
+    @Cacheable(value = "meeting_responses", key = "#year")
+    public List<MeetingResponse> getMeetingResponse(int year) {
+        return loadAllByYear(year).stream().map(MeetingResponse::fromEntity).toList();
     }
 }

@@ -29,9 +29,6 @@ public class Sector {
 
     private Double time;
 
-    @ElementCollection
-    @CollectionTable(name = "sector_segments", joinColumns = @JoinColumn(name = "sector_id"))
-    @Column(name = "segment_time")
-    @OrderColumn(name = "segment_order")
-    private List<Integer> segments = new ArrayList<>();
+    @Column(name = "segments")
+    private List<Integer> segments;
 }

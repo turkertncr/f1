@@ -17,6 +17,7 @@ public record MeetingRequest(
         @JsonProperty("circuit_key") int circuitKey,
         @JsonProperty("circuit_short_name") String circuitName,
         @JsonProperty("date_start") Instant dateStart,
+        @JsonProperty("date_end") Instant dateEnd,
         @JsonProperty("year") int year
 ) implements EntityMapper<Meeting> {
 
@@ -32,6 +33,7 @@ public record MeetingRequest(
                 .circuitKey(circuitKey)
                 .circuitName(circuitName)
                 .dateStart(dateStart)
+                .dateEnd(dateEnd)
                 .year(year)
                 .build();
     }

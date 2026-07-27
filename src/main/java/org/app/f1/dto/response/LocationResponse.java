@@ -6,9 +6,14 @@ import org.app.f1.entities.Location;
 
 @Builder
 public record LocationResponse(
-        @JsonProperty("driver_number") int driverNumber,
-        @JsonProperty("x") Integer x,
-        @JsonProperty("y") Integer y
+        @JsonProperty("driver_number")
+        int driverNumber,
+
+        @JsonProperty("x")
+        Integer x,
+
+        @JsonProperty("y")
+        Integer y
 ) {
     public static LocationResponse fromEntity(Location location) {
         return LocationResponse.builder()

@@ -26,7 +26,6 @@ import java.util.function.Function;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-@SuppressWarnings("all")
 public class OpenF1Client {
 
     private static final String RETRY_NAME = "openF1Retry";

@@ -17,11 +17,13 @@ const isQualifying = (sessionType: string) => {
     return sessionType.toLowerCase().includes('qualifying');
 };
 
-const formatGap = (gap: string[] | null, position: number, dnf: boolean, dns: boolean, dsq: boolean) => {
+const formatGap = (gap: string[] | null, duration: number[] | null, position: number, dnf: boolean, dns: boolean, dsq: boolean) => {
     if (dnf) return "DNF";
     if (dsq) return "DSQ";
     if (dns) return "DNS";
-    if (position === 1) return "WINNER";
+    if (position === 1) { // @ts-ignore
+      return formatDurationToTime(duration, false);
+    }
     if (!gap || gap.length === 0) return "-";
 
     let ret = gap[0];
@@ -31,15 +33,16 @@ const formatGap = (gap: string[] | null, position: number, dnf: boolean, dns: bo
     return ret;
 };
 
-const formatDurationToTime = (duration: number | undefined): string => {
+const formatDurationToTime = (duration: number | undefined, is_quali : boolean): string => {
     if (duration === undefined || duration === null || duration <= 0) return "-";
 
     const totalSeconds = duration;
     const minutes = Math.floor(totalSeconds / 60);
     const seconds = totalSeconds % 60;
+    const hours = Math.floor(minutes / 60);
 
-    // Format as m:ss.sss
-    return `${minutes}:${seconds.toFixed(3).padStart(6, '0')}`;
+    if (is_quali) return `${minutes%60}:${seconds.toFixed(3).padStart(6, '0')}`; // m:ss.sss
+    return `${hours}:${minutes%60}:${seconds.toFixed(3).padStart(6, '0')}`; // h:mm:ss.sss
 };
 
 
@@ -101,8 +104,6 @@ export default function ResultDashboard({ sessionKey, sessionType, meetingName, 
     // Get podium drivers for highlight
     const podiumDrivers = results.slice(0, 3);
     const winner = podiumDrivers[0];
-
-
 
     return (
         <div className="p-4 md:p-8 max-w-6xl mx-auto relative">
@@ -196,7 +197,7 @@ export default function ResultDashboard({ sessionKey, sessionType, meetingName, 
                 </div>
 
                 {results.map((entry, index) => {
-                    const {driver, gap_to_leader, dnf, dns, dsq} = entry;
+                    const {driver, duration, gap_to_leader, dnf, dns, dsq} = entry;
                     const position = index + 1; // Use sorted index as position
 
                     const borderColor = driver.team_colour ? `#${driver.team_colour}` : '#333';
@@ -217,26 +218,21 @@ export default function ResultDashboard({ sessionKey, sessionType, meetingName, 
                         >
                             <div className="group relative flex items-center bg-black hover:bg-neutral-900 transition-colors duration-200 border-b border-neutral-800/50">
                                 {/* Finishing Position */}
-                                <div className="w-10 py-3 flex items-center justify-center font-bold text-white text-sm">
+                                <div className="w-10 py-3 flex items-center justify-center font-bold text-sm">
                                     {position}
                                 </div>
 
                                 {/* Driver Number */}
-                                <div className="w-10 py-3 flex items-center justify-center font-bold text-white text-sm">
-                                    {driver.driver_number}
-                                </div>
-
-                                {/* Driver Image */}
-                                <div className="w-14 py-2 flex items-center justify-center">
-                                    <div className="w-8 h-8 rounded-full bg-neutral-800 overflow-hidden shrink-0">
-                                        <img
-                                            src={driver.headshot_url}
-                                            alt={driver.name_acronym}
-                                            className="w-full h-full object-cover transform translate-y-1 scale-125"
-                                            onError={(e) => (e.target as HTMLImageElement).style.display = 'none'}
-                                        />
-                                    </div>
-                                </div>
+                              <div
+                                  className="w-10 py-3 flex items-center justify-center font-bold text-sm"
+                                  style={{
+                                    color: driver.team_colour?.startsWith('#')
+                                        ? driver.team_colour
+                                        : `#${driver.team_colour}`
+                                  }}
+                              >
+                                {driver.driver_number}
+                              </div>
 
                                 {/* Driver Name */}
                                 <div className="flex-1 py-3 flex items-center gap-2">
@@ -265,7 +261,7 @@ export default function ResultDashboard({ sessionKey, sessionType, meetingName, 
                                 {qualifying ? (
                                     <>
                                         <div className={`w-32 md:w-36 pr-4 text-right font-mono font-medium text-xs md:text-sm tracking-tight py-3 ${position === 1 ? 'text-purple-400' : 'text-white/80'}`}>
-                                            {formatDurationToTime(bestTime)}
+                                            {formatDurationToTime(bestTime, true)}
                                         </div>
                                     </>
                                 ) : (
@@ -278,7 +274,9 @@ export default function ResultDashboard({ sessionKey, sessionType, meetingName, 
                                             dnf || dsq || dns ? 'text-red-500' : 
                                             'text-white'
                                         }`}>
-                                            {formatGap(gap_to_leader, position, dnf, dns, dsq)}
+                                            {
+                                              formatGap(gap_to_leader, duration ,position, dnf, dns, dsq)
+                                            }
                                         </div>
                                     </>
                                 )}

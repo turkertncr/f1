@@ -21,6 +21,6 @@ public class SessionController {
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     public List<SessionResponse> getSessions(@Positive @RequestParam int meetingKey) {
-        return sessionService.findSessions(meetingKey);
+        return sessionService.getSessionsResponse(meetingKey);
     }
 }

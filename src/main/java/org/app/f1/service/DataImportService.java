@@ -18,8 +18,8 @@ public class DataImportService {
     public void saveAllMeetings(List<Meeting> list) {
         String sql = """
                 insert into meetings (meeting_key, circuit_key, name, official_name, location,
-                country_name, country_code, circuit_name, date_start, year)
-                values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                country_name, country_code, circuit_name, date_start, date_end, year)
+                values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 on conflict (meeting_key) do nothing""";
         genericRepo.batchInsertIgnore(sql, list, (ps, meeting) -> {
             ps.setInt(1, meeting.getMeetingKey());
@@ -31,7 +31,8 @@ public class DataImportService {
             ps.setString(7, meeting.getCountryCode());
             ps.setString(8, meeting.getCircuitName());
             ps.setObject(9, meeting.getDateStart().atOffset(ZoneOffset.UTC));
-            ps.setInt(10, meeting.getYear());
+            ps.setObject(10, meeting.getDateEnd().atOffset(ZoneOffset.UTC));
+            ps.setInt(11, meeting.getYear());
         });
     }
 
@@ -147,13 +148,21 @@ public class DataImportService {
 
     public void saveAllSectors(List<Sector> list) {
         String sql = """
-                insert into sector (lap_id, sector, time)
-                values (?, ?, ?)
-                on conflict (lap_id, sector) do nothing""";
+              insert into sector (lap_id, sector, time, segments)
+              values (?, ?, ?, ?)
+              on conflict (lap_id, sector) do nothing""";
         genericRepo.batchInsertIgnore(sql, list, (ps, sector) -> {
             ps.setObject(1, sector.getLap().getId());
             ps.setInt(2, sector.getSector());
             ps.setObject(3, sector.getTime());
+            List<Integer> segments = sector.getSegments();
+            if (segments != null && !segments.isEmpty()) {
+                ps.setArray(4, ps.getConnection().createArrayOf("int4",
+                        segments.toArray()));
+            } else {
+                ps.setNull(4, Types.ARRAY);
+            }
         });
     }
+
 }
