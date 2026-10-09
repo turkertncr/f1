@@ -38,3 +38,4 @@ CLAUDE.md
 .env
 **/application-local.properties
 .claude
+./src/test

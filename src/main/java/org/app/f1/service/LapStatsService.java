@@ -9,6 +9,7 @@ import org.app.f1.entities.CarData;
 import org.app.f1.entities.Driver;
 import org.app.f1.entities.Lap;
 import org.app.f1.entities.Session;
+import org.app.f1.exception.ResourceNotFoundException;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
@@ -76,6 +77,12 @@ public class LapStatsService {
 
         Session session = sessionService.fetchSession(sessionKey);
         var sessionDrivers = session.getDrivers();
+        if (sessionDrivers.isEmpty()) {
+
+            sessionDrivers = driverService.fetchAndSaveDrivers(session, session.getMeeting().getYear());
+            if (sessionDrivers.isEmpty())
+                throw new ResourceNotFoundException("No drivers found for session: " + sessionKey);
+        }
 
         var map = getPaces(sessionKey);
 

@@ -3,13 +3,13 @@ import { motion } from 'framer-motion';
 import { X, Trash2 } from 'lucide-react';
 import { getCarData } from '../services/api';
 import ComparativeTrackMap from './TrackDashboard';
-import type { Driver, Lap, CarData } from '../types';
+import type { Driver, CarData, TimedLap } from '../types';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 export interface ComparisonEntry {
     selectionId: string;
     driver: Driver;
-    lap: Lap;
+    lap: TimedLap;
     color: string;
 }
 
@@ -225,7 +225,7 @@ function SectorTimesTable({ entries }: { entries: ComparisonEntry[] }) {
         bestSectors.push(times.length > 0 ? Math.min(...times) : null);
     }
 
-    const durations = entries.filter(e => e.lap.duration > 0).map(e => e.lap.duration);
+    const durations = entries.map(e => e.lap.duration);
     const bestTotal = durations.length > 0 ? Math.min(...durations) : null;
 
     const formatTime = (dur: number) => {
@@ -277,8 +277,8 @@ function SectorTimesTable({ entries }: { entries: ComparisonEntry[] }) {
                                     );
                                 })}
                                 <td className="px-4 py-3 text-center">
-                                    <span className={`font-mono font-bold text-sm ${entry.lap.duration > 0 && bestTotal != null && Math.abs(entry.lap.duration - bestTotal) < 0.0005 ? 'text-purple-400' : 'text-neutral-300'}`}>
-                                        {entry.lap.duration > 0 ? formatTime(entry.lap.duration) : '---'}
+                                    <span className={`font-mono font-bold text-sm ${bestTotal != null && Math.abs(entry.lap.duration - bestTotal) < 0.0005 ? 'text-purple-400' : 'text-neutral-300'}`}>
+                                        {formatTime(entry.lap.duration)}
                                     </span>
                                 </td>
                             </tr>

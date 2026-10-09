@@ -3,6 +3,7 @@ package org.app.f1.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.app.f1.dto.request.LapRequest;
+import org.app.f1.dto.response.DriverResponse;
 import org.app.f1.entities.*;
 import org.app.f1.exception.ResourceNotFoundException;
 import org.app.f1.repositories.DriverEntryRepo;
@@ -12,6 +13,7 @@ import org.app.f1.service.openf1.OpenF1Client;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -29,6 +31,7 @@ public class LapService {
     private final DriverEntryRepo driverEntryRepo;
     private final LapRepo lapRepo;
     private final SectorRepo sectorRepo;
+    private final DriverService driverService;
 
     @Value("${outlier_threshold}")
     private double OUTLIER_THRESHOLD;

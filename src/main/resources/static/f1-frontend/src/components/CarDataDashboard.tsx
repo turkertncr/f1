@@ -4,7 +4,8 @@ import { ArrowLeft, Activity, Zap, ChevronDown, Plus, X, BarChart3, Maximize2, C
 import { getDrivers, getLaps, getPace, getDriverStints } from '../services/api';
 import ComparisonPanel from './ComparisonPanel';
 import type { ComparisonEntry } from './ComparisonPanel';
-import type { Driver, Lap, Pace, Stint } from '../types';
+import type { Driver, Lap, Pace, Stint, TimedLap } from '../types';
+import { hasLapTime } from '../types';
 import softTyre from '../../assets/SOFT.svg';
 import mediumTyre from '../../assets/MEDIUM.svg';
 import hardTyre from '../../assets/HARD.svg';
@@ -20,7 +21,7 @@ interface Props {
 
 // ── Shared Types ─────────────────────────────────────────────────────────────
 export interface FetchState {
-    laps: Lap[];
+    laps: TimedLap[];
     loadingLaps: boolean;
     error: string | null;
 }
@@ -37,7 +38,7 @@ const MAX_COMPARISON_LAPS = 6;
 interface LapTimeSeries {
     id: string;
     driver: Driver;
-    laps: Lap[];
+    laps: TimedLap[];
     color: string;
 }
 
@@ -52,7 +53,7 @@ function LapTimeChart({ series, selectedLaps, onToggleLap, totalSelected }: LapT
     const [hideOutliers, setHideOutliers] = useState(false);
 
     const allValidLaps = useMemo(() => {
-        return series.flatMap(s => s.laps.filter(l => l.duration > 0));
+        return series.flatMap(s => s.laps);
     }, [series]);
 
     const chartSeries = useMemo(() => {
@@ -63,7 +64,7 @@ function LapTimeChart({ series, selectedLaps, onToggleLap, totalSelected }: LapT
             ...s,
             laps: s.laps.map(l => ({
                 ...l,
-                isValid: (!hideOutliers || !l.outlier) && l.duration > 0 && l.duration <= (hideOutliers ? minDur * 1.07 : cutoff)
+                isValid: (!hideOutliers || !l.outlier) && l.duration <= (hideOutliers ? minDur * 1.07 : cutoff)
             }))
         }));
     }, [series, allValidLaps, hideOutliers]);
@@ -499,7 +500,7 @@ function SelectionItem({ sessionKey, drivers, selection, onUpdate, onRemove, can
         const controller = new AbortController();
         getLaps(parseInt(sessionKey), selection.driver!.driver_number, controller.signal)
             .then(data => {
-                updateState({ laps: data.filter(l => l.duration && l.duration > 0), loadingLaps: false });
+                updateState({ laps: data.filter(hasLapTime), loadingLaps: false });
             })
             .catch(() => { if (!controller.signal.aborted) updateState({ error: 'Failed to load laps', loadingLaps: false }); });
 
@@ -507,7 +508,7 @@ function SelectionItem({ sessionKey, drivers, selection, onUpdate, onRemove, can
     }, [selection.driver, sessionKey, updateState]);
 
     const bestLap = state.laps.length
-        ? state.laps.reduce((best, lap) => lap.duration > 0 && lap.duration < best.duration ? lap : best)
+        ? state.laps.reduce((best, lap) => lap.duration < best.duration ? lap : best)
         : null;
 
     const formatTime = (dur: number | undefined | null) => {
@@ -764,9 +765,7 @@ export default function CarDataDashboard({ sessionKey, meetingName, sessionName,
     const handleSelectFastestLap = useCallback((selectionId: string) => {
         const fetchState = fetchedData[selectionId];
         if (!fetchState || fetchState.laps.length === 0) return;
-        const validLaps = fetchState.laps.filter(l => l.duration > 0);
-        if (validLaps.length === 0) return;
-        const fastest = validLaps.reduce((best, lap) => lap.duration < best.duration ? lap : best);
+        const fastest = fetchState.laps.reduce((best, lap) => lap.duration < best.duration ? lap : best);
 
         setComparisonLaps(prev => {
             const current = prev[selectionId] || [];

@@ -77,6 +77,5 @@ public class CustomRedisCache<T, R> implements Cache {
     }
 
     @Override
-    public void clear() {
-    }
+    public void clear() {}
 }

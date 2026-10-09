@@ -77,9 +77,17 @@ public class DataImportService {
         genericRepo.batchInsertIgnore(sql, list, (ps, lap) -> {
             ps.setObject(1, lap.getSession().getId());
             ps.setObject(2, lap.getDriverNumber());
-            ps.setObject(3, lap.getLapStart().atOffset(ZoneOffset.UTC));
+            if (lap.getLapStart() != null) {
+                ps.setObject(3, lap.getLapStart().atOffset(ZoneOffset.UTC));
+            } else {
+                ps.setNull(3, Types.TIMESTAMP_WITH_TIMEZONE);
+            }
             ps.setObject(4, lap.getLapNumber());
-            ps.setObject(5, lap.getDuration());
+            if (lap.getDuration() != null) {
+                ps.setDouble(5, lap.getDuration());
+            } else {
+                ps.setNull(5, Types.DOUBLE);
+            }
             ps.setBoolean(6, lap.isPitLap());
             ps.setBoolean(7, lap.isOutlier());
         });

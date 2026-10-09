@@ -48,7 +48,7 @@ public class DriverService {
         return buildDriverResponses(drivers, year);
     }
 
-    private Set<Driver> fetchAndSaveDrivers(Session session, int year) {
+    public Set<Driver> fetchAndSaveDrivers(Session session, int year) {
         List<DriverRequest> driverRequests = openF1Client.getDriverRequests(session);
 
         if (driverRequests.isEmpty()) {

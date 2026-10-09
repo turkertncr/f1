@@ -146,12 +146,10 @@ public class CustomRedisService {
                 args.addAll(List.of(fn, key));
                 bytes = baseBytes;
             }
-
             args.add(pair[0]);
             args.add(pair[1]);
             bytes += pairBytes;
         }
-
         if (args.size() > 2) sendRedis(RespUtil.encodeArray(args), out);
     }
 

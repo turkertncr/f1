@@ -3,6 +3,7 @@ package org.app.f1.service;
 import lombok.RequiredArgsConstructor;
 import org.app.f1.dto.request.LocationRequest;
 import org.app.f1.dto.response.LocationResponse;
+import org.app.f1.entities.Lap;
 import org.app.f1.entities.Location;
 import org.app.f1.entities.Session;
 import org.app.f1.exception.ResourceNotFoundException;
@@ -25,13 +26,17 @@ public class LocationService {
     @Cacheable(value = "locations", key = "#sessionKey + ':' + #lapNumber + ':' + #driverNumber", unless = "#result.isEmpty()")
     public List<LocationResponse> loadLocations(int sessionKey, int lapNumber, int driverNumber) {
         var lap = lapService.getLap(lapNumber, sessionKey, driverNumber);
-        var locations = locationRepo.loadLocations(sessionKey, driverNumber, lap.getLapStart(), lap.getLapEnd());
+        Lap.TimeWindow window = lap.timeWindow().orElseThrow(() -> new ResourceNotFoundException(
+                "Lap " + lapNumber + " of driver " + driverNumber + " has no start time or duration, "
+                        + "so its location data cannot be located"));
+
+        var locations = locationRepo.loadLocations(sessionKey, driverNumber, window.start(), window.end());
         if (!locations.isEmpty()) {
             return locations.stream().map(LocationResponse::fromEntity).toList();
         }
 
         Session session = sessionService.fetchSession(sessionKey);
-        List<LocationRequest> requests = openF1Client.getLocations(sessionKey, driverNumber, lap.getLapStart(), lap.getLapEnd());
+        List<LocationRequest> requests = openF1Client.getLocations(sessionKey, driverNumber, window.start(), window.end());
 
         if (requests.isEmpty()) {
             throw new ResourceNotFoundException("No location data found for driver " + driverNumber + " on lap " + lapNumber);

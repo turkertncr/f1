@@ -2,11 +2,11 @@ package org.app.f1.entities;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.app.f1.exception.ResourceNotFoundException;
 
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Entity
 @Getter
@@ -52,11 +52,13 @@ public class Lap {
 
     private boolean outlier;
 
-    public Instant getLapEnd() {
-        if (duration == null) {
-            throw new ResourceNotFoundException(
-                    "Lap " + lapNumber + " of driver " + driverNumber + " has no duration");
+    public Optional<TimeWindow> timeWindow() {
+        if (lapStart == null || duration == null) {
+            return Optional.empty();
         }
-        return lapStart.plusMillis((long) (duration * 1001));
+        return Optional.of(new TimeWindow(lapStart, lapStart.plusMillis((long) (duration * 1001))));
+    }
+
+    public record TimeWindow(Instant start, Instant end) {
     }
 }

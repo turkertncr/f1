@@ -48,15 +48,22 @@ export interface Lap {
   id: number;
   session_id: number;
   driver_number: number;
-  lap_start: string;
+  // OpenF1 omits date_start / lap_duration on some laps (out laps, deleted laps, red flags)
+  lap_start: string | null;
   lap_number: number;
-  duration: number;
+  duration: number | null;
   is_pit_lap: boolean;
   outlier: boolean;
   sectors: number[];
   avg_speed: number;
   top_speed: number;
 }
+
+// A lap the backend gave a usable lap time for — the only kind that can be plotted or compared.
+// Filter with hasLapTime() at the fetch boundary so downstream code never re-checks.
+export type TimedLap = Lap & { duration: number };
+
+export const hasLapTime = (lap: Lap): lap is TimedLap => lap.duration != null && lap.duration > 0;
 
 export interface CarData {
   id: number;

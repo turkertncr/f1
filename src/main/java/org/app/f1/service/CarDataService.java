@@ -7,6 +7,7 @@ import org.app.f1.dto.response.CarDataResponse;
 import org.app.f1.entities.CarData;
 import org.app.f1.entities.Lap;
 import org.app.f1.entities.Session;
+import org.app.f1.exception.ResourceNotFoundException;
 import org.app.f1.repositories.CarDataRepo;
 import org.app.f1.service.openf1.OpenF1Client;
 import org.springframework.cache.annotation.Cacheable;
@@ -33,14 +34,17 @@ public class CarDataService {
     public List<CarData> loadCarDataByLap(int sessionKey, int lapNumber, int driverNumber) {
 
         Lap lap = lapService.getLap(lapNumber, sessionKey, driverNumber);
-        Instant lapEnd = lap.getLapEnd();
-        var data = carDataRepo.loadCarData(sessionKey, lap.getLapStart(), lapEnd, driverNumber);
+        Lap.TimeWindow window = lap.timeWindow().orElseThrow(() -> new ResourceNotFoundException(
+                "Lap " + lapNumber + " of driver " + driverNumber + " has no start time or duration, "
+                        + "so its car data cannot be located"));
+
+        var data = carDataRepo.loadCarData(sessionKey, window.start(), window.end(), driverNumber);
         if (!data.isEmpty()) {
             return interpolateCarData(data);
         }
 
         Session session = sessionService.fetchSession(sessionKey);
-        List<CarDataRequest> requests = openF1Client.getCarData(driverNumber, lap.getLapStart(), lapEnd, sessionKey);
+        List<CarDataRequest> requests = openF1Client.getCarData(driverNumber, window.start(), window.end(), sessionKey);
         List<CarData> carData = requests.stream().map(rq -> rq.buildEntity(session, lapNumber)).toList();
 
         dataImportService.saveAllCarData(carData);

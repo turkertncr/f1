@@ -113,7 +113,7 @@ export default function ComparativeTrackMap({ sessionKey, baseDriverNumber, base
                       d={seg.path}
                       fill="none"
                       stroke={seg.color}
-                      strokeWidth={450}
+                      strokeWidth={250}
                       strokeLinecap="round"
                       strokeLinejoin="round"
                       className="transition-all duration-360"

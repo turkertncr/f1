@@ -1,6 +1,5 @@
 package org.app.f1.config;
 
-import org.app.f1.customredis.SortedSetOps;
 import org.app.f1.customredis.StringOps;
 import org.app.f1.dto.response.*;
 import org.app.f1.service.CustomRedisService;
@@ -27,11 +26,9 @@ public class CacheConfig {
     public CacheManager cacheManager() {
         SimpleCacheManager cacheManager = new SimpleCacheManager();
         cacheManager.setCaches(List.of(
-                new CustomRedisCache<>("car_data", new SortedSetOps<>(redisService, CarDataResponse.class,
-                        response -> response.date().toEpochMilli())),
+                new CustomRedisCache<>("car_data", new StringOps<>(redisService, CarDataResponse.class)),
 
-                new CustomRedisCache<>("locations", new SortedSetOps<>(redisService, LocationResponse.class,
-                        response -> response.date().toEpochMilli())),
+                new CustomRedisCache<>("locations", new StringOps<>(redisService, LocationResponse.class)),
 
                 new CustomRedisCache<>("meeting_responses", new StringOps<>(redisService, MeetingResponse.class)),
 
@@ -39,8 +36,7 @@ public class CacheConfig {
 
                 new CustomRedisCache<>("drivers", new StringOps<>(redisService, DriverResponse.class)),
 
-                new CustomRedisCache<>("laps", new SortedSetOps<>(redisService, LapResponse.class,
-                        LapResponse::lapNumber)),
+                new CustomRedisCache<>("laps", new StringOps<>(redisService, LapResponse.class)),
 
                 new CustomRedisCache<>("paces", new StringOps<>(redisService, PaceResponse.class)),
 
