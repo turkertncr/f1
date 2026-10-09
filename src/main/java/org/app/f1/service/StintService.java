@@ -22,7 +22,7 @@ public class StintService {
     private final OpenF1Client openF1Client;
     private final DataImportService dataImportService;
 
-    @Cacheable(value = "stints", key = "#sessionKey + '-' + #driverNumber")
+    @Cacheable(value = "stints", key = "#sessionKey + '-' + #driverNumber", unless = "#result.isEmpty()")
     public List<StintResponse> findStintsByDriverNumber(int driverNumber, int sessionKey) {
 
         Optional<List<Stint>> stint = stintRepo.findStintsByDriverNumberAndSessionSessionKeyOrderByStintNumberAsc(driverNumber, sessionKey);

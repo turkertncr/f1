@@ -35,7 +35,7 @@ public class DriverService {
     private final OpenF1Client openF1Client;
 
     @Transactional
-    @Cacheable(value = "drivers", key = "#sessionKey")
+    @Cacheable(value = "drivers", key = "#sessionKey", unless = "#result.isEmpty()")
     public List<DriverResponse> getDrivers(int sessionKey) {
         Session session = sessionService.fetchSession(sessionKey);
         int year = session.getMeeting().getYear();

@@ -27,7 +27,6 @@ public class SessionService {
     private final DataImportService dataImportService;
     private final MeetingService meetingService;
 
-    @Cacheable(value = "sessions", key = "#meetingKey")
     public List<Session> findSessions(int meetingKey) {
         List<Session> sessions = sessionRepo.findAllByMeeting_MeetingKey(meetingKey);
 
@@ -48,7 +47,7 @@ public class SessionService {
         return sessions;
     }
 
-    @Cacheable(value = "sessions_responses", key = "#meetingKey")
+    @Cacheable(value = "sessions_responses", key = "#meetingKey", unless = "#result.isEmpty()")
     public List<SessionResponse> getSessionsResponse(int meetingKey) {
         return findSessions(meetingKey).stream().map(SessionResponse::fromEntity).toList();
     }

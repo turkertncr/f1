@@ -8,6 +8,7 @@ import org.app.f1.entities.Session;
 import org.app.f1.exception.ResourceNotFoundException;
 import org.app.f1.repositories.LocationRepo;
 import org.app.f1.service.openf1.OpenF1Client;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import java.util.List;
 
@@ -21,6 +22,7 @@ public class LocationService {
     private final SessionService sessionService;
     private final DataImportService dataImportService;
 
+    @Cacheable(value = "locations", key = "#sessionKey + ':' + #lapNumber + ':' + #driverNumber", unless = "#result.isEmpty()")
     public List<LocationResponse> loadLocations(int sessionKey, int lapNumber, int driverNumber) {
         var lap = lapService.getLap(lapNumber, sessionKey, driverNumber);
         var locations = locationRepo.loadLocations(sessionKey, driverNumber, lap.getLapStart(), lap.getLapEnd());

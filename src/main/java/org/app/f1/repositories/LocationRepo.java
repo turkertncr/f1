@@ -15,6 +15,7 @@ public interface LocationRepo extends JpaRepository<Location, Long> {
                 and l.driverNumber = :driverNumber
                 and l.date >= :dateStart
                 and l.date <= :dateEnd
+                order by l.date
             """)
     List<Location> loadLocations(
             int sessionKey, int driverNumber, Instant dateStart, Instant dateEnd

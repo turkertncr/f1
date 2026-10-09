@@ -26,7 +26,7 @@ public class ResultService {
     private final DriverService driverService;
     private final DataImportService dataImportService;
 
-    @Cacheable(value = "results", key = "#sessionKey")
+    @Cacheable(value = "results", key = "#sessionKey", unless = "#result.isEmpty()")
     public List<ResultResponse> findAllBySession(int sessionKey) {
 
         Set<Result> results = resultRepo.findAllBySession_SessionKey(sessionKey);

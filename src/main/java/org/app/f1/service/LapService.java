@@ -10,7 +10,6 @@ import org.app.f1.repositories.LapRepo;
 import org.app.f1.repositories.SectorRepo;
 import org.app.f1.service.openf1.OpenF1Client;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -34,7 +33,6 @@ public class LapService {
     @Value("${outlier_threshold}")
     private double OUTLIER_THRESHOLD;
 
-    @Cacheable(value = "laps", key = "#sessionKey + '-' + #driverNumber", unless = "#result.isEmpty()")
     public List<Lap> getLaps(int sessionKey, int driverNumber) {
         if (sectorRepo.existsByLapSessionSessionKeyAndLapDriverNumber(sessionKey, driverNumber)) {
             return lapRepo.findAllBySessionKeyAndDriverNumber(sessionKey, driverNumber);
@@ -96,7 +94,6 @@ public class LapService {
                                 "Lap " + lapNumber + " not found for driver " + driverNumber)));
     }
 
-    @Cacheable(value = "allLaps", key = "#sessionKey", unless = "#result.isEmpty()")
     public List<Lap> getAllLaps(int sessionKey) {
         Session session = sessionService.fetchSession(sessionKey);
         var allLaps = lapRepo.getAllBySessionKey(sessionKey);

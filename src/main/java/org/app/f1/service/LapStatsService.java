@@ -9,6 +9,7 @@ import org.app.f1.entities.CarData;
 import org.app.f1.entities.Driver;
 import org.app.f1.entities.Lap;
 import org.app.f1.entities.Session;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -23,6 +24,7 @@ public class LapStatsService {
     private final DriverService driverService;
     private final SessionService sessionService;
 
+    @Cacheable(value = "laps", key = "#sessionKey + '-' + #driverNumber", unless = "#result.isEmpty()")
     public List<LapResponse> getLapResponses(int sessionKey, int driverNumber) {
         var carDataMap = carDataService.getCarDataFromDb(sessionKey, driverNumber);
         return lapService.getLaps(sessionKey, driverNumber).stream()
@@ -68,6 +70,7 @@ public class LapStatsService {
         return paces;
     }
 
+    @Cacheable(value = "paces", key = "#sessionKey", unless = "#result.isEmpty()")
     public List<PaceResponse> buildPaceResponse(int sessionKey) {
         List<PaceResponse> paces = new ArrayList<>();
 
@@ -83,9 +86,7 @@ public class LapStatsService {
                 continue;
             }
 
-            paces.add(
-                    new  PaceResponse(DriverResponse.fromEntity(driver, entry), pace)
-            );
+            paces.add(new  PaceResponse(DriverResponse.fromEntity(driver, entry), pace));
         }
         return paces;
     }

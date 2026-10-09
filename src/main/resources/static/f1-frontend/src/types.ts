@@ -72,6 +72,7 @@ export interface CarData {
 
 export interface Location {
   driver_number: number;
+  date: string;
   x: number;
   y: number;
 }

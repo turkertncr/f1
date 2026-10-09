@@ -30,7 +30,6 @@ public class CarDataService {
     private final OpenF1Client openF1Client;
     private final DataImportService dataImportService;
 
-    @Cacheable(value = "car_data", key = "#sessionKey + '-' + #lapNumber + '-' + #driverNumber", unless = "#result.isEmpty()")
     public List<CarData> loadCarDataByLap(int sessionKey, int lapNumber, int driverNumber) {
 
         Lap lap = lapService.getLap(lapNumber, sessionKey, driverNumber);
@@ -48,6 +47,7 @@ public class CarDataService {
         return interpolateCarData(carData);
     }
 
+    @Cacheable(value = "car_data", key = "#sessionKey + ':' + #lapNumber + ':' + #driverNumber", unless = "#result.isEmpty()")
     public List<CarDataResponse> getCarDataResponse(int sessionKey, int lapNumber, int driverNumber) {
         return loadCarDataByLap(sessionKey, lapNumber, driverNumber)
                 .stream()
@@ -65,8 +65,6 @@ public class CarDataService {
         if (data == null || data.size() < 2) {
             return data;
         }
-
-        System.out.println("Raw data size " +  data.size());
 
         CarData first = data.get(0);
         CarData second = data.get(1);

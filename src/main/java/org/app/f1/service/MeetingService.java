@@ -19,7 +19,6 @@ public class MeetingService {
     private final OpenF1Client openF1Client;
     private final DataImportService dataImportService;
 
-    @Cacheable(value = "meetings", key = "#year")
     public List<Meeting> loadAllByYear(int year) {
         List<Meeting> meetings = meetingRepo.findAllByYear(year);
         if (meetings.isEmpty()) {
@@ -33,7 +32,7 @@ public class MeetingService {
         return meetings;
     }
 
-    @Cacheable(value = "meeting_responses", key = "#year")
+    @Cacheable(value = "meeting_responses", key = "#year", unless = "#result.isEmpty()")
     public List<MeetingResponse> getMeetingResponse(int year) {
         return loadAllByYear(year).stream().map(MeetingResponse::fromEntity).toList();
     }

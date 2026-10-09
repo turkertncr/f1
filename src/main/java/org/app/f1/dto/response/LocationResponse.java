@@ -4,10 +4,15 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import org.app.f1.entities.Location;
 
+import java.time.Instant;
+
 @Builder
 public record LocationResponse(
         @JsonProperty("driver_number")
         int driverNumber,
+
+        @JsonProperty("date")
+        Instant date,
 
         @JsonProperty("x")
         Integer x,
@@ -18,6 +23,7 @@ public record LocationResponse(
     public static LocationResponse fromEntity(Location location) {
         return LocationResponse.builder()
                 .driverNumber(location.getDriverNumber())
+                .date(location.getDate())
                 .x(location.getX())
                 .y(location.getY())
                 .build();

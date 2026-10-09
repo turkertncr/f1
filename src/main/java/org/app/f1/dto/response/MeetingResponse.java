@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import org.app.f1.entities.Meeting;
 
+import java.time.Instant;
+
 @Builder
 public record MeetingResponse(
         @JsonProperty("meeting_key")
@@ -16,7 +18,10 @@ public record MeetingResponse(
         String countryName,
 
         @JsonProperty("location")
-        String location
+        String location,
+
+        @JsonProperty("date")
+        Instant date
 ) {
     public static MeetingResponse fromEntity(Meeting meeting) {
         return MeetingResponse.builder()
@@ -24,6 +29,7 @@ public record MeetingResponse(
                 .meetingName(meeting.getName())
                 .countryName(meeting.getCountryName())
                 .location(meeting.getLocation())
+                .date(meeting.getDateStart())
                 .build();
     }
 }
